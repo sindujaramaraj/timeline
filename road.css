@@ -1,0 +1,47 @@
+/* commons */
+.fLeft {
+    float: left;
+}
+
+.fRight {
+    float: right;
+}
+
+.cloud {
+    position: absolute;
+    z-index: 100;
+}
+
+.cloudlet {
+    background: white;
+}
+
+.road {
+    z-index: -1;
+}
+
+.scale {
+    background-image: url(image/scale.png);
+    height: 35px;
+    width: 100%;
+}
+
+.headers {
+    position: absolute;
+    height: 85px;
+    width: 100%;
+}
+
+.header {
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+}
+
+.plotArea, .plotContainer {
+    position: absolute;
+    overflow: hidden;
+}
