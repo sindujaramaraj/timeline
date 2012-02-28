@@ -51,7 +51,7 @@ function Road(cavas, config) {
             var t = (actualPHeight/2)/actualPHeight; //keep the formula as we can change the t value for better curve
             //the bending angle of each path is proportional to the difference between xPos and topXPos
             for (var idx = 0; idx < this.nol; idx++) {
-                var grd = this.context.createLinearGradient(xPos, actualPHeight, xPos + this.eachPathWidth,0);
+                var grd = this.context.createLinearGradient(xPos, actualPHeight, xPos + this.eachPathWidth, 0);
                 grd.addColorStop(0.05, rColors[cIdx]);
                 grd.addColorStop(0.95, "white");
                 this.context.fillStyle = rColors[cIdx]; //grd;            
@@ -76,20 +76,27 @@ function Road(cavas, config) {
                 //write header text
                 headers.appendChild(headerDiv);
                 headerDiv.innerHTML = this.laneHeaders[idx];
-
                 this.lanePositionInfo[idx] = {};
-                this.lanePositionInfo[idx].firstCurve = calculateCurvePoint(t, {x:xPos, y:0},
-                                                                                    {x:topXPos, y:actualPHeight/2},
-                                                                                    {x:topXPos, y:actualPHeight}); 
-                this.lanePositionInfo[idx].secondCurve = calculateCurvePoint(t, {x:xPos + this.eachPathWidth, y:0},
-                                                                                    {x:topXPos + this.eachTopPathWidth, y:actualPHeight/2},
-                                                                                     {x:topXPos + this.eachTopPathWidth, y:actualPHeight});
-                this.context.fillStyle = "black";
-                this.context.fillRect(this.lanePositionInfo[idx].firstCurve.x, this.lanePositionInfo[idx].firstCurve.y, 5, 5);
+                this.lanePositionInfo[idx].bottomX1 = xPos;
+                this.lanePositionInfo[idx].topX1 = topXPos;
+                //see how the curve is formed                
+                /*for (var k = 0; k <= 1;) {
+                    this.lanePositionInfo[idx].firstCurve = calculateCurvePoint(k, {x:xPos, y:0},
+                                                                                        {x:topXPos, y:actualPHeight/2},
+                                                                                        {x:topXPos, y:actualPHeight}); 
+                    this.lanePositionInfo[idx].secondCurve = calculateCurvePoint(k, {x:xPos + this.eachPathWidth, y:0},
+                                                                                        {x:topXPos + this.eachTopPathWidth, y:actualPHeight/2},
+                                                                                         {x:topXPos + this.eachTopPathWidth, y:actualPHeight});
+                    this.context.fillStyle = "black";
+                    this.context.fillRect(this.lanePositionInfo[idx].firstCurve.x, actualPHeight - this.lanePositionInfo[idx].firstCurve.y, 2, 2);
+                    k += 0.005;
+                }*/
 
                 xPos += this.eachPathWidth;            
                 topXPos += this.eachTopPathWidth;
                 cIdx = !cIdx;
+                this.lanePositionInfo[idx].bottomX2 = xPos;
+                this.lanePositionInfo[idx].topX2 = topXPos;
             }
             this.actualHeight = actualPHeight;
         },
@@ -117,7 +124,7 @@ function Road(cavas, config) {
                                                         height: this.actualHeight,
                                                         width: this.width});        
             var idx = 0, len = this.plots.length;
-            var eventDate, eventPlots = [], eventPlotsMap = {}, eventDateLong;
+            var eventData, eventPlots = [], eventPlotsMap = {}, eventDateLong;
             //analyse data
             for (; idx < len; idx++) {
                 eventData = new Date(this.plots[idx].date);
@@ -141,8 +148,7 @@ function Road(cavas, config) {
             this.plotArea.render(startingYear, endingYear);
         },
         createEventPlot: function(plotDetails) {
-            plotDetails.firstCurve = this.lanePositionInfo[plotDetails.lane-1].firstCurve;
-            plotDetails.secondCurve = this.lanePositionInfo[plotDetails.lane-1].secondCurve;            
+            plotDetails.positionInfo = this.lanePositionInfo[plotDetails.lane-1];
             var eventPlot = new EventPlot(this.plotArea, plotDetails);
             return eventPlot;
         },
@@ -219,7 +225,7 @@ function Road(cavas, config) {
             return totalHeight;
         },
         calculateYearSpace: function(plot, yearStartingHeight) {
-            plotDate = new Date(plot.date);
+            var plotDate = new Date(plot.date);
             var remainingDisplayHeight = this.height - yearStartingHeight;
             var allowedSpace = 0;
             var parts = 0;
@@ -263,7 +269,7 @@ function Road(cavas, config) {
         this.date = new Date(config.date);
     }
     
-    EventPlot.finalHeight = 90;
+    EventPlot.finalHeight = 80;
 
     EventPlot.initialHeight = 10;
 
@@ -272,47 +278,63 @@ function Road(cavas, config) {
             var position = this.calculateLeftAndTop(baseTop, yearLength);
             var pDiv = document.createElement("div");
             var pImage = document.createElement("image");
-            pImage.src = this.config.icon || "image/pin.png";        
+            pImage.height = 20;
+            pImage.width = 15;
+            pImage.src = this.config.icon || "image/pin.png";
             pImage.onload = calculateWidthFactor(pImage, pDiv, position.height);
             pDiv.appendChild(pImage);
             pDiv.className = "plotContainer";
             
             applyStyle(pDiv, {
-                                bottom: (this.parentContainer.height - position.top) + "px",
-                                left: position.left + position.xDiff + "px"
+                                top: (position.top - position.height) + "px",
+                                left: (position.left - (pImage.width/2)) + "px"
                             });
             this.parentContainer.appendChild(pDiv);
             this.element = pDiv;
+            this.t = position.t;
+            /*var totalHeight = this.parentContainer.height;
+            var me = this;
+            setInterval(function() {
+                //for (var idx = position.t; idx <=1;) {
+                    var cp1 = calculateCurvePoint(me.t, {x:me.config.positionInfo.bottomX1, y:0},
+                        {x:me.config.positionInfo.topX1, y:totalHeight/2},
+                        {x:me.config.positionInfo.topX1, y:totalHeight});
+                    me.t -= 0.0001;
+                    applyStyle(pDiv, {
+                        left: cp1.x + "px",
+                        top: totalHeight - cp1.y + "px"
+                    });
+                //}
+            }, 0);*/
         },    
         adjustToHeight: function(baseTop, yearLength) {
             var position = this.calculateLeftAndTop(baseTop, yearLength);
             this.element.firstChild.height = position.height;
             this.element.firstChild.width = position.height * this.element.firstChild.widthFactor;
             applyStyle(this.element, {
-                                bottom: (this.parentContainer.height - position.top) + "px",
-                                left: position.left + position.xDiff + "px",
+                                top: (position.top - position.height) + "px",
+                                left: (position.left - (this.element.firstChild.width/2)) + "px",
                                 height: position.height,
                                 width: this.element.firstChild.offsetWidth + "px"
                             });
         },
         calculateLeftAndTop: function(baseTop, yearLength) {
+            var totalHeight = this.parentContainer.height;            
             var top = baseTop + (yearLength/12 * this.getDate().getMonth()) ;
-            var height = EventPlot.initialHeight + ((top/this.parentContainer.height)
+            var height = EventPlot.initialHeight + ((top/totalHeight)
                                                         * (EventPlot.finalHeight - EventPlot.initialHeight)) ;
             var bottomX = this.config.lane * EventPlot.bottomPathWidth;
             var topX = EventPlot.topX + (this.config.lane * EventPlot.topPathWidth);
 
-            var d11 = (this.config.firstCurve.x - bottomX)/(this.parentContainer.height - this.config.firstCurve.y);
-            var d12 = (topX - this.config.firstCurve.x)/this.config.firstCurve.y;
-            var xDiff = (this.config.secondCurve.x - this.config.firstCurve.x)/2;
-            var left;            
-            //correct this formula
-            if (top > this.config.firstCurve.y) {
-                left = (this.parentContainer.height - top)*d11; 
-            } else {
-                left = this.config.firstCurve.x + ((this.config.firstCurve.y - top)*d12);  
-            }
-            return {left: left, top: top, height: height, xDiff: xDiff};                        
+            var t = 1 - (top/totalHeight);
+            var cp1 = calculateCurvePoint(t, {x:this.config.positionInfo.bottomX1, y:0},
+                                             {x:this.config.positionInfo.topX1, y:totalHeight/2},
+                                             {x:this.config.positionInfo.topX1, y:totalHeight}); 
+            var cp2 = calculateCurvePoint(t, {x:this.config.positionInfo.bottomX2, y:0},
+                                             {x:this.config.positionInfo.topX2, y:totalHeight/2},
+                                             {x:this.config.positionInfo.topX2, y:totalHeight});
+            var xDiff = (cp2.x - cp1.x)/2;
+            return {left: cp1.x + xDiff, top: top, height: height, t: t};
         },
         getFinalHeight: function() {
             return EventPlot.finalHeight;
