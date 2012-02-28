@@ -45,3 +45,14 @@
     position: absolute;
     overflow: hidden;
 }
+
+.divider {
+    position: absolute;
+    background: #000;
+    height: 2px;
+}
+
+.dividerText {
+    font-weight: bold;
+    position: absolute;
+}
