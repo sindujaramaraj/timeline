@@ -44,15 +44,21 @@
 .plotArea, .plotContainer {
     position: absolute;
     overflow: hidden;
+    z-index: 1;
 }
 
 .divider {
     position: absolute;
     background: #000;
     height: 2px;
+    z-index: 0;
 }
 
 .dividerText {
     font-weight: bold;
+    position: absolute;
+}
+
+.navigator {
     position: absolute;
 }

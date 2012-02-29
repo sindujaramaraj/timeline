@@ -33,7 +33,8 @@
             //calculations
             this.setScale();
             this.drawRoad();
-            this.plotTheRoad(); 
+            this.plotTheRoad();
+            this.createNavigator();
         },
         drawRoad: function() {
             //create header div
@@ -165,6 +166,35 @@
         createEventPlot: function(plotDetails) {
             var eventPlot = new EventPlot(this.plotArea, plotDetails);
             return eventPlot;
+        },
+        createNavigator: function() {
+            var me = this;
+            var navigator = document.createElement("div");
+            navigator.className = "navigator";
+            var upBtn = document.createElement("button");
+            upBtn.innerHTML = "Up";
+            upBtn.onmouseover = function() {
+                setInterval(function() {
+                    me.plotArea.moveUp();
+                }, 0);
+
+            };
+            upBtn.onmouseout = function() {
+                me.plotArea.stopMovingUp();
+            }
+            var downBtn = document.createElement("button");
+            downBtn.innerHTML = "Down";
+            downBtn.onmouseover = function() {
+                setInterval(function() {
+                    me.plotArea.moveDown();
+                }, 0);
+            };
+            downBtn.onmouseout = function() {
+                me.plotArea.stopMovingDown();
+            }
+            navigator.appendChild(upBtn);
+            navigator.appendChild(downBtn);
+            this.plotArea.appendChild(navigator);
         }
     }
 
@@ -176,28 +206,15 @@
     }
 
     PlotArea.finalHeight = 150;
+    PlotArea.moveConstant = 0.0005;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
-            this.layerHeight = this.calculateLayerHeight(endingYear - startingYear + 1);
             this.startingYear = startingYear;
             this.endingYear = endingYear;
-            var currentYear = startingYear;
-            var currentPart = 1;
             var currentAltitude = this.height - PlotArea.finalHeight;
-            var currentDate;
-            for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
-                currentDate = this.plotElements[idx].date;
-                if (currentDate.getFullYear() != currentYear) {
-                    currentPart += (currentYear - currentDate.getFullYear());                    
-                    currentAltitude = this.height - this.calculateLayerHeight(currentPart);
-                    currentYear = currentDate.getFullYear();
-                }
-                this.plotElements[idx].render(currentAltitude,
-                                    this.calculateYearSpace(this.plotElements[idx], currentAltitude));
-                this.plotElements[idx].setCurrentAltitude(currentAltitude);
-            }
-            var me = this, plotElement, currentAltitude;
+            this._render(currentAltitude);
+            /*var me = this, plotElement, currentAltitude;
             setInterval(function() {
                 for (var idx = 0, len = me.plotElements.length; idx < len; idx++) {
                     plotElement = me.plotElements[idx];
@@ -205,9 +222,25 @@
                     plotElement.adjustToHeight(currentAltitude,
                                     me.calculateYearSpace(plotElement, currentAltitude));
                     plotElement.setCurrentAltitude(currentAltitude);
-                }    
-            }, 0);
-        },    
+                }
+            }, 0);*/
+        },
+        _render: function(currentAltitude) {
+            var currentYear = this.startingYear;
+            var currentPart = 1;
+            var currentDate;
+            for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
+                currentDate = this.plotElements[idx].date;
+                if (currentDate.getFullYear() != currentYear) {
+                    currentPart += (currentYear - currentDate.getFullYear());
+                    currentAltitude = this.height - this.calculateLayerHeight(currentPart);
+                    currentYear = currentDate.getFullYear();
+                }
+                this.plotElements[idx].render(currentAltitude,
+                    this.calculateYearSpace(this.plotElements[idx], currentAltitude));
+                this.plotElements[idx].setCurrentAltitude(currentAltitude);
+            }
+        },
         addPlotElement: function(plotElements) {
             this.plotElements = this.plotElements.concat(plotElements);
         },
@@ -240,6 +273,22 @@
         },
         appendChild: function(child) {
             this.area.appendChild(child);
+        },
+        moveUp: function() {
+            for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
+                this.plotElements[idx].moveUp();
+            }
+        },
+        moveDown: function() {
+            for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
+                this.plotElements[idx].moveDown();
+            }
+        },
+        stopMovingUp: function() {
+
+        },
+        stopMovingDown: function() {
+
         }
     };
 
@@ -247,6 +296,7 @@
         this.parentContainer = parentContainer;
         this.config = config;
         this.date = new Date(config.date);
+        this.totalHeight = this.parentContainer.height;
     }
 
     MovableElement.prototype = {
@@ -263,6 +313,7 @@
 
     function EventPlot(parentContainer, config) {
         MovableElement.call(this, parentContainer, config);
+        this.positionInfo = lanePositionInfo[this.config.lane - 1];
     }
     
     EventPlot.finalHeight = 80;
@@ -271,83 +322,84 @@
 
     extend(EventPlot, MovableElement, {
         render: function (baseTop, yearLength) {
-            var position = this.calculateLeftAndTop(baseTop, yearLength);
+            var position = this._calculateLeftAndTop(baseTop, yearLength, true);
             var pDiv = document.createElement("div");
-            var pImage = document.createElement("image");
-            var imgsrc = this.config.icon || "image/pin.png";
-            pImage.src = imgsrc;
-            if (imageInfo[imgsrc]) {
-                pImage.height = position.height;
-                pImage.width = position.height * imageInfo[imgsrc];
-                applyStyle(pDiv, {
-                    height: position.height,
-                    width: position.height * imageInfo[imgsrc]
-                })
-            } else {
-                pImage.onload = calculateWidthFactor(pImage, pDiv, position.height);
-            }
-            pDiv.appendChild(pImage);
             pDiv.className = "plotContainer";
             pDiv.id = this.config.id;
-            
-            applyStyle(pDiv, {
-                                top: (position.top - position.height) + "px",
-                                left: (position.left - (pImage.width/2)) + "px"
-                            });
+            var pImage = new Image();
+            var imgsrc = this.config.icon || "image/pin.png";
+            pDiv.appendChild(pImage);
             this.parentContainer.appendChild(pDiv);
+            pImage.src = imgsrc;
+            pImage.onload = calculateWidthFactor(pImage, pDiv, position);
             this.element = pDiv;
             this.image = pImage;
             this.t = position.t;
-            /*var totalHeight = this.parentContainer.height;
-            var me = this;
-            setInterval(function() {
-                //for (var idx = position.t; idx <=1;) {
-                    var cp1 = calculateCurvePoint(me.t, {x:me.config.positionInfo.bottomX1, y:0},
-                        {x:me.config.positionInfo.topX1, y:totalHeight/2},
-                        {x:me.config.positionInfo.topX1, y:totalHeight});
-                    me.t -= 0.0001;
-                    applyStyle(pDiv, {
-                        left: cp1.x + "px",
-                        top: totalHeight - cp1.y + "px"
-                    });
-                //}
-            }, 0);*/
-        },    
-        adjustToHeight: function(baseTop, yearLength) {
-            var position = this.calculateLeftAndTop(baseTop, yearLength);
-            this.image.height = position.height;
-            this.image.width = position.height * imageInfo[this.image.src];
-            applyStyle(this.element, {
-                                top: (position.top - position.height) + "px",
-                                left: (position.left - (this.image.width/2)) + "px",
-                                height: position.height,
-                                width: this.image.offsetWidth + "px"
-                            });
         },
-        calculateLeftAndTop: function(baseTop, yearLength) {
-            var totalHeight = this.parentContainer.height;            
-            var top = baseTop + (yearLength/12 * this.getDate().getMonth()) ;
-            var height = EventPlot.initialHeight + ((top/totalHeight)
-                                                        * (EventPlot.finalHeight - EventPlot.initialHeight)) ;
-            var bottomX = this.config.lane * EventPlot.bottomPathWidth;
-            var topX = EventPlot.topX + (this.config.lane * EventPlot.topPathWidth);
+        _calculateLeftAndTop: function(baseTop, yearLength) {
+            var top = baseTop + (yearLength/12 * this.getDate().getMonth());
+            var t = 1 - (top/this.totalHeight);
 
-            var t = 1 - (top/totalHeight);
-            var positionInfo = lanePositionInfo[this.config.lane - 1];
-            var cp1 = calculateCurvePoint(t, {x:positionInfo.bottomX1, y:0},
-                                             {x:positionInfo.topX1, y:totalHeight/2},
-                                             {x:positionInfo.topX1, y:totalHeight});
-            var cp2 = calculateCurvePoint(t, {x:positionInfo.bottomX2, y:0},
-                                             {x:positionInfo.topX2, y:totalHeight/2},
-                                             {x:positionInfo.topX2, y:totalHeight});
+            var cp1 = this._calculateCP1(t);
+            var cp2 = this._calculateCP2(t);
+
+            var height = this._calculateHeight(top);
             var xDiff = (cp2.x - cp1.x)/2;
             return {left: cp1.x + xDiff, top: top, height: height, t: t};
+        },
+        _calculateHeight: function(top) {
+            return EventPlot.initialHeight + ((top/this.totalHeight)
+                * (EventPlot.finalHeight - EventPlot.initialHeight)) ;
+        },
+        _calculateCP1: function(t) {
+            return calculateCurvePoint(t, {x:this.positionInfo.bottomX1, y:0},
+                {x:this.positionInfo.topX1, y:this.totalHeight/2},
+                {x:this.positionInfo.topX1, y:this.totalHeight});
+        },
+        _calculateCP2: function(t) {
+            return calculateCurvePoint(t, {x:this.positionInfo.bottomX2, y:0},
+                {x:this.positionInfo.topX2, y:this.totalHeight/2},
+                {x:this.positionInfo.topX2, y:this.totalHeight});
         },
         getFinalHeight: function() {
             return EventPlot.finalHeight;
         },
         getDate: function() {
             return this.date;
+        },
+        moveUp: function() {
+            this.t += PlotArea.moveConstant;
+            this._adjustPosition();
+        },
+        moveDown: function() {
+            this.t -= PlotArea.moveConstant;
+            this._adjustPosition();
+        },
+        _adjustPosition: function() {
+            var cp1 = this._calculateCP1(this.t);
+            var cp2 = this._calculateCP2(this.t);
+            var top = this.totalHeight - cp1.y;
+            var height = this._calculateHeight(top);
+            var xDiff = (cp2.x - cp1.x)/2;
+            this.image.height = height;
+            this.image.width = height * imageInfo[this.image.src];
+            applyStyle(this.element, {
+                top: (top - height) + "px",
+                left: (cp1.x + xDiff - (this.image.offsetWidth/2)) + "px",
+                height: height + "px",
+                width: this.image.offsetWidth + "px"
+            });
+        },
+        adjustToHeight: function(baseTop, yearLength) {
+            var position = this._calculateLeftAndTop(baseTop, yearLength);
+            this.image.height = position.height;
+            this.image.width = position.height * imageInfo[this.image.src];
+            applyStyle(this.element, {
+                top: (position.top - position.height) + "px",
+                left: (position.left - (this.image.offsetWidth/2)) + "px",
+                height: position.height,
+                width: this.image.offsetWidth + "px"
+            });
         }
     });
 
@@ -365,27 +417,77 @@
             var containerDiv = document.createElement("div");
             var yDiv = document.createElement("div");
             yDiv.className = "divider";
-            var position = this.calculateWidth(baseTop);
+            var position = this._calculateWidth(baseTop);
             applyStyle(yDiv, {
                 left: position.left + "px",
                 top: position.top + "px",
-                width: position.width + "px"
+                width: position.width + "px",
+                display: position.top < 0 ? "none" : ""
             });
             var tDiv = document.createElement("div");
             tDiv.innerHTML = this.year;
             tDiv.className = "dividerText";
             applyStyle(tDiv, {
                 left: position.left + position.width + "px",
-                top: position.top + "px"
+                top: position.top + "px",
+                display: position.top < 0 ? "none" : ""
             });
             containerDiv.appendChild(yDiv);
             containerDiv.appendChild(tDiv);
             this.parentContainer.appendChild(containerDiv);
             this.divider = yDiv;
             this.text = tDiv;
+            this.t = position.t;
+            this.top = position.top;
+        },
+        _calculateWidth: function(top) {
+            var t = 1 - (top/this.totalHeight);
+            var cp1 = this._calculateCP1(t);
+            var cp2 = this._calculateCP2(t);
+            return {left: cp1.x, top: top, width: cp2.x - cp1.x, t: t};
+        },
+        _calculateCP1: function(t) {
+            return calculateCurvePoint(t, {x:this.bottomX1, y:0},
+                                            {x:this.topX1, y: this.totalHeight/2},
+                                            {x: this.topX1, y: this.totalHeight});
+        },
+        _calculateCP2: function(t) {
+            return calculateCurvePoint(t, {x:this.bottomX2, y:0},
+                                            {x:this.topX2, y: this.totalHeight/2},
+                                            {x: this.topX2, y: this.totalHeight});
+        },
+        moveUp: function() {
+            this.t += PlotArea.moveConstant;
+            this._adjustPosition();
+        },
+        moveDown: function() {
+            this.t -= PlotArea.moveConstant;
+            this._adjustPosition();
+        },
+        _adjustPosition: function() {
+            var cp1 = this._calculateCP1(this.t);
+            var top = this.totalHeight - cp1.y;
+            if (top < 0 || top > this.totalHeight) {
+                this.divider.style.display = "none";
+                this.text.style.display = "none";
+                return;
+            }
+            var cp2 = this._calculateCP2(this.t);
+
+            applyStyle(this.divider, {
+                left: cp1.x + "px",
+                top: top + "px",
+                width: (cp2.x - cp1.x) + "px",
+                display: ""
+            });
+            applyStyle(this.text, {
+                left: cp2.x + "px",
+                top: top + "px",
+                display: ""
+            });
         },
         adjustToHeight: function(baseTop) {
-            var position = this.calculateWidth(baseTop);
+            var position = this._calculateWidth(baseTop);
             applyStyle(this.divider, {
                 left: position.left + "px",
                 top: position.top + "px",
@@ -395,17 +497,6 @@
                 left: position.left + position.width + "px",
                 top: position.top + "px"
             });
-        },
-        calculateWidth: function(top) {
-            var totalHeight = this.parentContainer.height;
-            var t = 1 - (top/totalHeight);
-            var cp1 = calculateCurvePoint(t, {x:this.bottomX1, y:0},
-                                                {x:this.topX1, y: totalHeight},
-                                                {x: this.topX1, y:totalHeight});
-            var cp2 = calculateCurvePoint(t, {x:this.bottomX2, y:0},
-                                                {x:this.topX2, y: totalHeight},
-                                                {x: this.topX2, y:totalHeight});
-            return {left: cp1.x, top: top, width: cp2.x - cp1.x};
         }
     });
 
@@ -417,18 +508,24 @@
         }
     }
 
-    function calculateWidthFactor(image, div, hValue) {
+    function calculateWidthFactor(image, div, position) {
         return function() {
-            var height = image.offsetHeight;
-            var width = image.offsetWidth;
-            var widthFactor = parseFloat(width/height);
-            image.height = hValue;
-            image.width = hValue * widthFactor;
+            var widthFactor = imageInfo[image.src];
+            if (!imageInfo[image.src]) {
+                var height = image.offsetHeight;
+                var width = image.offsetWidth;
+                widthFactor = parseFloat(width/height);
+                imageInfo[image.src] = widthFactor;
+            }
+            image.height = position.height;
+            image.width = position.height * widthFactor;
             applyStyle(div, {
-                                height: hValue,
-                                width: hValue*widthFactor
-                            });
-            imageInfo[image.src] = widthFactor;
+                    height: position.height + "px",
+                    width: position.height * widthFactor + "px",
+                    top: position.top - position.height + "px",
+                    left: position.left - (position.height * widthFactor/2) + "px",
+                    display: position.top < 0 ? "none" : ""
+            });
         }
     }
 
