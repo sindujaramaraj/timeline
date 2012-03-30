@@ -203,40 +203,22 @@
         this.height = this.currentHeight = config.height;
         this.width = config.width;
         this.plotElements = [];
+        this.firstPlotHeight = PlotArea.finalHeight;
     }
 
     PlotArea.finalHeight = 150;
-    PlotArea.moveConstant = 0.5;
+    PlotArea.moveConstant = 1.5;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
             this.startingYear = startingYear;
             this.endingYear = endingYear;
-            this._render(this.height);
-            /*var me = this, plotElement, currentAltitude;
-            setInterval(function() {
-                for (var idx = 0, len = me.plotElements.length; idx < len; idx++) {
-                    plotElement = me.plotElements[idx];
-                    currentAltitude = plotElement.getCurrentAltitude() + 0.50;
-                    plotElement.adjustToHeight(currentAltitude,
-                                    me.calculateYearSpace(plotElement, currentAltitude));
-                    plotElement.setCurrentAltitude(currentAltitude);
-                }
-            }, 0);*/
-            /*var me = this;
-            var height = this.height;
-            this.interval = setInterval(function() {
-                me._render(height-=PlotArea.moveConstant);
-                if (height <= 0) {
-                    clearInterval(me.interval);
-                    height = me.height;
-                }
-            }, 0);*/
+            this._render(this.height, this.firstPlotHeight);
         },
-        _render: function(height) {
+        _render: function(height, firstLayerHeight) {
             var currentYear = this.startingYear;
             var currentDate;
-            var layerHeight = this.calculateLayerHeight(height);
+            var layerHeight = firstLayerHeight;
             var currentAltitude = height;
 
             for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
@@ -250,8 +232,30 @@
                     }
                     currentYear = currentDate.getFullYear();
                 }
-                /*this.plotElements[idx].render(currentAltitude,
-                    this.calculateYearSpace(this.plotElements[idx], currentAltitude, height));*/
+                this.plotElements[idx].setCurrentAltitude(currentAltitude);
+                this.plotElements[idx].render(currentAltitude, layerHeight);
+            }
+        },
+        _adjust: function(factorFunction, altitudeFunction, lhFuntion) {
+            var factor = PlotArea.moveConstant;
+            var currentYear = this.startingYear;
+            var currentDate;
+            var layerHeight = this.firstPlotHeight;
+            var currentAltitude = this.currentHeight;
+
+            for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
+                currentDate = this.plotElements[idx].date;
+                if (currentDate.getFullYear() != currentYear) {
+                    var diff = currentYear - currentDate.getFullYear();
+                    while( diff > 0) {
+                        factor = factorFunction(factor);
+                        var altitude = altitudeFunction(factor, this.plotElements[idx].getCurrentAltitude());
+                        layerHeight = lhFuntion(currentAltitude, altitude);
+                        currentAltitude = altitude;
+                        diff--;
+                    }
+                    currentYear = currentDate.getFullYear();
+                }
                 this.plotElements[idx].setCurrentAltitude(currentAltitude);
                 this.plotElements[idx].render(currentAltitude, layerHeight);
             }
@@ -259,60 +263,18 @@
         addPlotElement: function(plotElements) {
             this.plotElements = this.plotElements.concat(plotElements);
         },
-        calculateLayerHeight: function(baseAltitude) {
-            if (baseAltitude < this.height) {
-                return 150 - ((this.height - baseAltitude)*0.85);
-            } else {
-                return 150 + ((baseAltitude - this.height)*0.85);
-            }
-        },
-        calculateLayerHeight1: function(nParts) {
-            var totalHeight = 0;
-            for (var idx = 0; idx < nParts; idx++) {
-                totalHeight += (PlotArea.finalHeight * Math.pow(0.85, idx));
-            }
-            return totalHeight;
-        },
-        calculateYearSpace: function(plot, yearStartingHeight, height) {
-            var plotDate = new Date(plot.date);
-            var remainingDisplayHeight = height - yearStartingHeight;
-            var allowedSpace = 0;
-            var parts = 0;
-            var projectedHeight;
-            //calculate how much space can be alloted for a year segement at particular height            
-            while(true) {
-                projectedHeight = this.calculateLayerHeight(parts);                
-                if (remainingDisplayHeight > projectedHeight) {
-                    parts++;
-                } else {
-                    //adjust the height differece
-                    var diffHeight = projectedHeight - remainingDisplayHeight;
-                    allowedSpace = (PlotArea.finalHeight * Math.pow(0.85, parts)) + (diffHeight * 0.85);
-                    break;
-                }
-            }
-            return allowedSpace;                          
-        },
         appendChild: function(child) {
             this.area.appendChild(child);
         },
         moveUp: function() {
-            /*for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
-                this.plotElements[idx].moveUp();
-            }*/
-            this._render(this.currentHeight-=PlotArea.moveConstant);
-            if (this.currentHeight <= 0) {
-                this.currentHeight = this.height;
-            }
+            this.firstPlotHeight -= PlotArea.moveConstant;
+            this.currentHeight -= PlotArea.moveConstant;
+            this._adjust(PlotArea_factorMoveUp, PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
         },
         moveDown: function() {
-            /*for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
-                this.plotElements[idx].moveDown();
-            }*/
-            this._render(this.currentHeight+=PlotArea.moveConstant);
-            if (this.currentHeight <= 0) {
-                this.currentHeight = this.height;
-            }
+            this.firstPlotHeight += PlotArea.moveConstant;
+            this.currentHeight += PlotArea.moveConstant;
+            this._adjust(PlotArea_factorMoveDown, PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
         },
         stopMovingUp: function() {
 
@@ -321,6 +283,30 @@
 
         }
     };
+
+    function PlotArea_factorMoveUp(factor) {
+        return factor/0.85;
+    }
+
+    function PlotArea_factorMoveDown(factor) {
+        return factor * 0.85;
+    }
+
+    function PlotArea_calculateAltitudeMoveUp(factor, currentAltitude) {
+        return currentAltitude - factor;
+    }
+
+    function PlotArea_calculateAltitudeMoveDown(factor, currentAltitude) {
+        return currentAltitude + factor;
+    }
+
+    function PlotArea_calculateLHMoveUp(previousAltitude, currentAltitude) {
+        return previousAltitude - currentAltitude;
+    }
+
+    function PlotArea_calculateLHMoveDown(previousAltitude, currentAltitude) {
+        return currentAltitude - previousAltitude;
+    }
 
     function MovableElement(parentContainer, config) {
         this.parentContainer = parentContainer;
