@@ -210,7 +210,7 @@
     }
 
     PlotArea.finalHeight = 150;
-    PlotArea.moveConstant = 1.5;
+    PlotArea.moveConstant = 0.5;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
