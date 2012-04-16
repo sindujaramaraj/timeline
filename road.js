@@ -1,13 +1,19 @@
 (function() {
     //variable local to function scope
 
-    var imageInfo = {};
+	function detectMobile() {
+		var userAgent = navigator.userAgent;
+		return /iPad/i.test(userAgent) || /iPhone/i.test(userAgent) || /android/i.test(userAgent);
+	}
+    
+	var imageInfo = {};
     var lanePositionInfo = {};
     var nol;
-    var interval;
+    var interval, speedDown = false;
     var eventPlots = {};
+	var isMobile = detectMobile();
 
-    function Road(canvas, config) {
+	function Road(canvas, config) {
         this.canvas = canvas;
         this.height = canvas.height;
         this.width = canvas.width;
@@ -37,6 +43,8 @@
             this.drawRoad();
             this.plotTheRoad();
             this.createNavigator();
+			this.addTouchEvents();
+			
         },
         drawRoad: function() {
             //create header div
@@ -118,7 +126,7 @@
             //create plot area div element        
             var plotAreaDiv = document.createElement("div");
             plotAreaDiv.className = "plotArea";
-	    applyStyle(plotAreaDiv, {
+	    	applyStyle(plotAreaDiv, {
                                         top: this.canvas.offsetTop + "px",
                                         height: this.actualHeight + "px",
                                         width: this.width + "px"
@@ -176,29 +184,34 @@
             navigator.className = "navigator";
             var upBtn = document.createElement("button");
             upBtn.innerHTML = "Up";
-            upBtn.onmouseover = function() {
+			var downBtn = document.createElement("button");
+            downBtn.innerHTML = "Down";
+            upBtn.addEventListener("mouseover", (function() {
                 interval = setInterval(function() {
                     me.plotArea.moveUp();
-                }, 0);
-
-            };
-            upBtn.onmouseout = function() {
-                me.plotArea.stopMovingUp();
-            }
-            var downBtn = document.createElement("button");
-            downBtn.innerHTML = "Down";
+                }, 0)
+			}), false);
+            upBtn.addEventListener("mouseout", (function() {
+		    	me.plotArea.stopMoving();
+		    }), false);
+            
             downBtn.onmouseover = function() {
                 interval = setInterval(function() {
                     me.plotArea.moveDown();
                 }, 0);
             };
             downBtn.onmouseout = function() {
-                me.plotArea.stopMovingDown();
+                me.plotArea.stopMoving();
             }
             navigator.appendChild(upBtn);
             navigator.appendChild(downBtn);
             this.plotArea.appendChild(navigator);
-        }
+        },
+		addTouchEvents: function() {
+			if (isMobile) {
+				alert("add touch event");
+			}
+		}
     }
 
     function PlotArea(plotAreaDiv, config) {
@@ -210,7 +223,8 @@
     }
 
     PlotArea.finalHeight = 150;
-    PlotArea.moveConstant = 1.5;
+    PlotArea.moveConstant = PlotArea.constant = 1.5;
+    PlotArea.stopConstant = 0.005;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
@@ -270,20 +284,29 @@
             this.area.appendChild(child);
         },
         moveUp: function() {
-            this.firstPlotHeight -= PlotArea.moveConstant;
+			this.controlSpeed();            
+			this.firstPlotHeight -= PlotArea.moveConstant;
             this.currentHeight -= PlotArea.moveConstant;
             this._adjust(PlotArea_factorMoveUp, PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
         },
         moveDown: function() {
+			this.controlSpeed();
             this.firstPlotHeight += PlotArea.moveConstant;
             this.currentHeight += PlotArea.moveConstant;
             this._adjust(PlotArea_factorMoveDown, PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
         },
-        stopMovingUp: function() {
-	    clearInterval(interval);
-        },
-        stopMovingDown: function() {
-	    clearInterval(interval);
+		controlSpeed: function() {
+			if (speedDown) {
+				PlotArea.moveConstant -= PlotArea.stopConstant;			
+			}
+			if (PlotArea.moveConstant <= 0) {
+				clearInterval(interval);
+				PlotArea.moveConstant = PlotArea.constant;
+				speedDown = false;
+			}
+		},
+        stopMoving: function() {	    
+			speedDown = true;
         }
     };
 
@@ -352,8 +375,8 @@
                 var pImage = new Image();
                 var imgsrc = this.config.icon || "image/pin.png";
                 pDiv.appendChild(pImage);
-		pDiv.onmouseover = highlightEventPlot;
-		pDiv.onmouseout = removeHighlightEventPlot;
+				pDiv.onmouseover = highlightEventPlot;
+				pDiv.onmouseout = removeHighlightEventPlot;
                 this.parentContainer.appendChild(pDiv);
                 pImage.src = imgsrc;
                 pImage.onload = calculateWidthFactor(pImage, pDiv, position);
@@ -581,31 +604,31 @@
     }
 
     function highlightEventPlot(evt) {
-	var div = evt.srcElement.parentNode;	
-	var height = parseFloat(div.style.height) * 1.5;
-	var width = parseFloat(div.style.width) * 1.5;
-	applyStyle(div, {height: height, width: width});
-	div.firstChild.height = height;
-	div.firstChild.width = width;
-	var eventData = eventPlots[div.id].config;
-	createDialog(eventData.date, eventData.data, div.offsetLeft, div.offsetTop);
+		var div = evt.srcElement.parentNode;	
+		var height = parseFloat(div.style.height) * 1.5;
+		var width = parseFloat(div.style.width) * 1.5;
+		applyStyle(div, {height: height, width: width});
+		div.firstChild.height = height;
+		div.firstChild.width = width;
+		var eventData = eventPlots[div.id].config;
+		createDialog(eventData.date, eventData.data, div.offsetLeft, div.offsetTop);
     }
 
     function removeHighlightEventPlot(evt) {
-	var div = evt.srcElement.parentNode;	
-	var height = parseFloat(div.style.height) / 1.5;
-	var width = parseFloat(div.style.width) / 1.5;
-	applyStyle(div, {height: height, width: width});
-	div.firstChild.height = height;
-	div.firstChild.width = width;
+		var div = evt.srcElement.parentNode;	
+		var height = parseFloat(div.style.height) / 1.5;
+		var width = parseFloat(div.style.width) / 1.5;
+		applyStyle(div, {height: height, width: width});
+		div.firstChild.height = height;
+		div.firstChild.width = width;
     }
 
     function createDialog(title, data, left, top) {
-	$("#dialog")[0].innerHTML = data;
-	$("#dialog").dialog({
-				title: title,
-				position: [left, top]
-			});
+		$("#dialog")[0].innerHTML = data;
+		$("#dialog").dialog({
+					title: title,
+					position: [left, top]
+				});
     }
 
     window.Road = Road;
