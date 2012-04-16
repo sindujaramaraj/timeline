@@ -209,7 +209,6 @@
         },
 		addTouchEvents: function() {
 			if (isMobile) {
-				alert("add touch event");
 			}
 		}
     }

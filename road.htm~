@@ -175,7 +175,7 @@
     </head>
     
     <body>
-        <!--div style="height:300px;font-size: 17px;">This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. <p>This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. </p></div-->
+        <div style="height:300px;font-size: 17px;">This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. <p>This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. </p></div>
         <div class="canvas_container" id="roadDiv">
             
             <canvas id="road" class="road" width=940 height=650></canvas>
