@@ -195,21 +195,29 @@
 		    	me.plotArea.stopMoving();
 		    }), false);
             
-            downBtn.onmouseover = function() {
+            downBtn.addEventListener("mouseover", (function() {
                 interval = setInterval(function() {
                     me.plotArea.moveDown();
                 }, 0);
-            };
-            downBtn.onmouseout = function() {
+            }), false);
+            downBtn.addEventListener("mouseout", (function() {
                 me.plotArea.stopMoving();
-            }
+            }), false);
             navigator.appendChild(upBtn);
             navigator.appendChild(downBtn);
             this.plotArea.appendChild(navigator);
         },
 		addTouchEvents: function() {
 			if (isMobile) {
-				alert("add touch event");
+				var me = this;				
+				this.canvas.addEventListener("touchmove", function() {
+					interval = setInterval(function() {
+										me.plotArea.moveDown();
+									}, 0);					
+				});
+				this.canvas.addEventListener("touchend", function() {
+					me.stopMoving();
+				}, false);	
 			}
 		}
     }
