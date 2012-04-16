@@ -37,9 +37,7 @@ This app will create a timeline depicted as a road with different events along t
     </div>
 
     <!-- link to main -->
-    <div class="inner">
-	<a href="road.htm">See Demo</a>
-    </div>
+    <a href="road.htm">See Demo</a>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
