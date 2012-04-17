@@ -188,7 +188,8 @@
             return eventPlot;
         },
         createNavigator: function() {
-            var me = this;
+			if (isMobile) return;            
+			var me = this;
             var navigator = document.createElement("div");
             navigator.className = "navigator";
             var upBtn = document.createElement("button");
@@ -220,11 +221,13 @@
 			if (isMobile) {
 				alert("add touch event");
 				var me = this;				
-				element.addEventListener("touchstart", function() {
-					alert("touch start");			
+				element.addEventListener("touchend", function() {
+					me.plotArea.stopMoving();
 				}, false);
 				element.addEventListener("touchmove", function() {
-					alert("touch move");
+					interval = setInterval(function() {
+                    	me.plotArea.moveDown();
+                	}, 0);
 				}, false);	
 			}
 		}
