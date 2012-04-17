@@ -212,7 +212,7 @@
 				var me = this;				
 				this.canvas.addEventListener("touchmove", function() {
 					alert("touch start");			
-				}, false);
+				});
 				this.canvas.addEventListener("touchend", function() {
 					alert("touch end");
 				}, false);	
