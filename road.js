@@ -180,7 +180,7 @@
             }
             this.plotArea.addPlotElement(new YearDivider(this.plotArea, {year: startingYear, date: new Date("January 1," + startingYear)}));
             this.plotArea.render(startingYear, endingYear);
-			this.addTouchEvents(plotArea);
+			this.addTouchEvents(plotAreaDiv);
         },
         createEventPlot: function(plotDetails) {
             var eventPlot = new EventPlot(this.plotArea, plotDetails);
