@@ -1,3 +1,26 @@
+body {
+	overflow: hidden;
+	padding: 0;
+}
+
+.canvas_container {
+	width: 940px;
+    height: 100%;                
+    margin: auto;
+    z-index: -5;
+}
+
+.mobile_layer { 
+	position: absolute;
+	width: 940px;
+	z-index: 50;
+}
+
+.plot {
+	position: absolute;
+    z-index: 1;
+}
+            
 /* commons */
 .fLeft {
     float: left;
@@ -21,9 +44,10 @@
 }
 
 .scale {
-    background-image: url(image/scale.png);
+    background: url(image/scale.png) no-repeat;
     height: 35px;
     width: 100%;
+	position: absolute;
 }
 
 .headers {

@@ -1,185 +1,13 @@
 <html>
     <head>
         <title>Road</title>
-        <style type="text/css">
-            body {
-                xoverflow: hidden;
-                padding: 0;
-            }
-            .canvas_container {
-                width: 940px;
-                height: 980px;                
-                margin: auto;
-                z-index: -5;
-            }
-
-            .mobile_layer { 
-                position: absolute;
-                width: 940px;
-                z-index: 50;
-            }
-
-            .trans_region {
-                position: relative;
-                top: 0;
-                left: 0;
-                width: 940px;
-                z-index: 1000;
-                opacity: 0.1;
-                filters: alpha(opacity=10); /* For IE8 and earlier */
-                xbackground: #fff;
-            }
-            
-            .plot {
-                position: absolute;
-                z-index: 1;
-            }
-            
-            .plot:hover {
-                zoom: 200%;
-            }
-
-            .plot.animate123 {
-                animation: myfirst 5s;
-                -moz-animation: myfirst 5s;
-                -webkit-animation: myfirst 5s;
-            }
-
-            .divider {
-                position: relative;
-                text-align: center;
-                color: white;
-                font-weight: bold;
-                background: transparent #ccc;
-                line-height: 0px;
-            }
-            
-            .navbtn {
-                position: absolute;
-                top: 30%;
-            }
-
-            .absolute {
-                position: absolute;
-            }
-
-            #plot_area, #headers {
-                width: 940px;
-                overflow: hidden;
-            }
-
-            .fLeft {
-                float: left;
-            }
-
-            #legendinfo {
-                right: 0px;
-                top: 10%;
-                padding: 10px;
-            }
-
-            .colorInfo {
-                width: 15px;
-                height: 15px;
-                float: left;
-                margin-right: 5px;
-            }
-
-            .legend {
-                margin-bottom: 5px;
-            }
-
-            #playback {
-                top: 0px;
-                width: 940px;
-                height: 30px;
-                z-index: 100;
-            }
-
-            #marker {
-                height: 100%;
-                width: 10px;
-                cursor: pointer;
-                background: black;
-                position: relative;
-                left: 0;
-            }
-
-            #scale, #startPlayBtn {
-                float:left
-            }
-
-            #scale {
-                border: 1px solid black;
-                width: 100%;
-                background: #ccc;
-            } 
-
-            #startPlayBtn {
-                
-            }
-            
-
-            
-            /*@keyframes myfirst
-            {
-                from {
-                    width: 50;
-                    height: 50;
-                    opacity: 0.5;
-                }
-                to {
-                    top: 880;
-                    left: 600;
-                    width: 75;
-                    height: 75;
-                    opacity: 1;
-                }
-            }
-
-            @-moz-keyframes myfirst
-            {
-                from {
-                    width: 50;
-                    height: 50;
-                    opacity: 0.5;
-                }
-                to {
-                    top: 880;
-                    left: 600;
-                    width: 75;
-                    height: 75;
-                    opacity: 0.1;
-                }
-            }
-
-            @-webkit-keyframes myfirst /* Safari and Chrome */
-            /*{
-                from {
-                    width: 50;
-                    height: 50;
-                    opacity: 0.5;
-                }
-                to {
-                    top: 880;
-                    left: 600;
-                    width: 75;
-                    height: 75;
-                    opacity: 1;
-                }
-            }*/
-
-        </style>
         <link type="text/css" rel="stylesheet" href="road.css"></link>
 	<link type="text/css" rel="stylesheet" href="jquery/css/custom-theme/jquery-ui-1.8.18.custom.css"></link>
     </head>
     
     <body>
         <!--div style="height:300px;font-size: 17px;">This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. <p>This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. </p></div-->
-        <div class="canvas_container" id="roadDiv">
-            
-            <canvas id="road" class="road" width=940 height=650></canvas>
-        </div>
+        <div class="canvas_container" id="roadDiv"></div>
 	<div id="dialog" title="Basic dialog" style="display:none">
 		<p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
 	</div>
@@ -196,8 +24,8 @@
         var playbackDiv, scaleMoveUnit;
         var unitSpace = 200, startingYear = 2000, currentYear = 2011;
         
-        var canvas = document.getElementById("road");        
-        var road = new Road(canvas,
+        var canvasContainer = document.getElementById("roadDiv");        
+        var road = new Road(canvasContainer,
                          {
                             laneHeaders: columns,
                             pointerColours: cColors,

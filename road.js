@@ -13,8 +13,8 @@
     var eventPlots = {};
 	var isMobile = detectMobile();
 
-	function Road(canvas, config) {
-        this.canvas = canvas;
+	function Road(canvasContainer, config) {
+        var canvas = this.initCanvas(canvasContainer);
         this.height = canvas.height;
         this.width = canvas.width;
         this.context = canvas.getContext("2d");
@@ -25,6 +25,7 @@
         this.topWidth = config.topWidth || (this.width/5);
         this.eachPathWidth = this.width/nol;
         this.eachTopPathWidth = this.topWidth/nol;
+		this.canvas = canvas;
         /*
          var config = {
          laneHeaders: ["Lane 1", "Lane 2", "Lane 3", "Lane 4", "Lane 5"],
@@ -37,7 +38,16 @@
     }
 
     Road.prototype = {
-        create: function() {
+		initCanvas: function(container) {
+			var canvas = document.createElement("canvas");
+			canvas.className = "road";
+			canvas.id = "road";
+			canvas.height = container.offsetHeight;
+			canvas.width = container.offsetWidth;
+			container.appendChild(canvas);
+			return canvas;
+		},        
+		create: function() {
             //calculations
             this.setScale();
             this.drawRoad();
@@ -228,7 +238,7 @@
         this.firstPlotHeight = PlotArea.finalHeight;
     }
 
-    PlotArea.finalHeight = 150;
+    PlotArea.finalHeight = 200;
     PlotArea.moveConstant = PlotArea.constant = 1.5;
     PlotArea.stopConstant = 0.005;
 
