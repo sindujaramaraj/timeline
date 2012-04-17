@@ -219,12 +219,13 @@
         },
 		addTouchEvents: function() {
 			if (isMobile) {
+				alert("add touch event");
 				var me = this;				
-				this.canvas.addEventListener("touchmove", function() {
+				this.canvas.addEventListener("touchstart", function() {
 					alert("touch start");			
 				}, false);
-				this.canvas.addEventListener("touchend", function() {
-					alert("touch end");
+				this.canvas.addEventListener("touchmove", function() {
+					alert("touch move");
 				}, false);	
 			}
 		}
