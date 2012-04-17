@@ -250,7 +250,7 @@
     }
 
     PlotArea.finalHeight = 200;
-    PlotArea.moveConstant = PlotArea.constant = 1.5;
+    PlotArea.moveConstant = PlotArea.constant = 4;
     PlotArea.stopConstant = 0.005;
 
     PlotArea.prototype = {
