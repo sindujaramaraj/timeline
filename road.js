@@ -236,7 +236,12 @@
 						TOUCH_STATE = 0;
 						me.plotArea.stopMoving();
 					}
-				}, false);					
+				}, false);
+
+				//prevent scrolling
+				document.body.addEventListener('touchmove', function(event) {
+  					event.preventDefault();
+				}, false); 					
 			}
 		}
     }
@@ -650,6 +655,7 @@
     }
 
     function createDialog(title, data, left, top) {
+		return;		
 		$("#dialog")[0].innerHTML = data;
 		$("#dialog").dialog({
 					title: title,
