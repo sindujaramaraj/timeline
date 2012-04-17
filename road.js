@@ -9,7 +9,7 @@
 	var imageInfo = {};
     var lanePositionInfo = {};
     var nol;
-    var interval, speedDown = false;
+    var interval, speedDown = false, TOUCH_STATE = 0;
     var eventPlots = {};
 	var isMobile = detectMobile();
 
@@ -219,16 +219,24 @@
         },
 		addTouchEvents: function(element) {
 			if (isMobile) {
-				alert("add touch event");
 				var me = this;				
-				element.addEventListener("touchend", function() {
-					me.plotArea.stopMoving();
-				}, false);
+				element.addEventListener("touchStart", function() {
+					TOUCH_STATE = 1;
+				}, false);				
 				element.addEventListener("touchmove", function() {
-					interval = setInterval(function() {
-                    	me.plotArea.moveDown();
-                	}, 0);
-				}, false);	
+					if (TOUCH_STATE == 1) {
+						interval = setInterval(function() {
+		                	me.plotArea.moveDown();
+		            	}, 0);
+						TOUCH_STATE = 2;
+					}
+				}, false);
+				element.addEventListener("touchend", function() {
+					if (TOUCH_STATE == 2) {
+						TOUCH_STATE = 0;
+						me.plotArea.stopMoving();
+					}
+				}, false);					
 			}
 		}
     }
