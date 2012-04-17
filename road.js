@@ -220,7 +220,7 @@
 		addTouchEvents: function(element) {
 			if (isMobile) {
 				var me = this;				
-				element.addEventListener("touchStart", function() {
+				element.addEventListener("touchstart", function() {
 					TOUCH_STATE = 1;
 				}, false);				
 				element.addEventListener("touchmove", function() {
