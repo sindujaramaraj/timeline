@@ -627,7 +627,6 @@
             customObj[member] = customObj[member] || parentClass.prototype[member];
         }
         childClass.prototype = customObj;
-        childClass.prototype.super = parentClass.prototype;
     }
 
     function highlightEventPlot(evt) {
