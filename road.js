@@ -7,11 +7,12 @@
 	}
     
 	var imageInfo = {};
-    var lanePositionInfo = {};
-    var nol;
-    var interval, speedDown = false, TOUCH_STATE = 0;
-    var eventPlots = {};
+	var lanePositionInfo = {};
+	var nol;
+	var interval, speedDown = false, TOUCH_STATE = 0;
+	var eventPlots = {};
 	var isMobile = detectMobile();
+	var stopTime = 1500; //1.5s
 
 	function Road(canvasContainer, config) {
         var canvas = this.initCanvas(canvasContainer);
@@ -26,6 +27,7 @@
         this.eachPathWidth = this.width/nol;
         this.eachTopPathWidth = this.topWidth/nol;
 		this.canvas = canvas;
+		stopTime = config.stopTime || stopTime;
         /*
          var config = {
          laneHeaders: ["Lane 1", "Lane 2", "Lane 3", "Lane 4", "Lane 5"],
@@ -197,18 +199,14 @@
 			var downBtn = document.createElement("button");
             downBtn.innerHTML = "Down";
             upBtn.addEventListener("mouseover", (function() {
-                interval = setInterval(function() {
-                    me.plotArea.moveUp();
-                }, 0)
+				runInTimer(me.plotArea, "moveUp");                
 			}), false);
             upBtn.addEventListener("mouseout", (function() {
 		    	me.plotArea.stopMoving();
 		    }), false);
             
             downBtn.addEventListener("mouseover", (function() {
-                interval = setInterval(function() {
-                    me.plotArea.moveDown();
-                }, 0);
+                runInTimer(me.plotArea, "moveDown");                
             }), false);
             downBtn.addEventListener("mouseout", (function() {
                 me.plotArea.stopMoving();
@@ -256,7 +254,6 @@
 
     PlotArea.finalHeight = 200;
     PlotArea.moveConstant = PlotArea.constant = 4;
-    PlotArea.stopConstant = 0.005;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
@@ -322,23 +319,26 @@
             this._adjust(PlotArea_factorMoveUp, PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
         },
         moveDown: function() {
-			this.controlSpeed();
-            this.firstPlotHeight += PlotArea.moveConstant;
+			this.firstPlotHeight += PlotArea.moveConstant;
             this.currentHeight += PlotArea.moveConstant;
             this._adjust(PlotArea_factorMoveDown, PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
+			this.controlSpeed();
         },
-		controlSpeed: function() {
-			if (speedDown) {
-				PlotArea.moveConstant -= PlotArea.stopConstant;			
-			}
-			if (PlotArea.moveConstant <= 0) {
-				clearInterval(interval);
-				PlotArea.moveConstant = PlotArea.constant;
-				speedDown = false;
-			}
-		},
+        controlSpeed: function() {
+            if (speedDown) {
+	            PlotArea.moveConstant -= this.stopConstant;			
+            }
+            if (PlotArea.moveConstant <= 0) {
+	            clearInterval(interval);
+	            PlotArea.moveConstant = PlotArea.constant;
+	            speedDown = false;
+            }
+        },
         stopMoving: function() {	    
-			speedDown = true;
+            this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
+            speedDown = true;
+            this.elapsedTime = 0.0;
+            this.startTime = new Date().getTime();
         }
     };
 
@@ -347,7 +347,7 @@
     }
 
     function PlotArea_factorMoveDown(factor) {
-        return factor * 0.85;
+        return factor*0.85;
     }
 
     function PlotArea_calculateAltitudeMoveUp(factor, currentAltitude) {
@@ -661,6 +661,16 @@
 					title: title,
 					position: [left, top]
 				});
+    }
+
+    function runInTimer(instance, callback) {
+        var startTime = new Date().getTime();
+	    instance[callback]();							
+        var endTime = new Date().getTime();
+        instance.roundTime  = endTime - startTime;
+        interval = setInterval(function() {
+            instance[callback]();				
+        }, 0);
     }
 
     window.Road = Road;
