@@ -53,8 +53,6 @@
             this.drawRoad();
             this.plotTheRoad();
             this.createNavigator();
-			this.addTouchEvents();
-			
         },
         drawRoad: function() {
             //create header div
@@ -182,10 +180,11 @@
             }
             this.plotArea.addPlotElement(new YearDivider(this.plotArea, {year: startingYear, date: new Date("January 1," + startingYear)}));
             this.plotArea.render(startingYear, endingYear);
+			this.addTouchEvents(plotArea);
         },
         createEventPlot: function(plotDetails) {
             var eventPlot = new EventPlot(this.plotArea, plotDetails);
-	    eventPlots[plotDetails.id] = eventPlot;
+	    	eventPlots[plotDetails.id] = eventPlot;
             return eventPlot;
         },
         createNavigator: function() {
@@ -217,14 +216,14 @@
             navigator.appendChild(downBtn);
             this.plotArea.appendChild(navigator);
         },
-		addTouchEvents: function() {
+		addTouchEvents: function(element) {
 			if (isMobile) {
 				alert("add touch event");
 				var me = this;				
-				this.canvas.addEventListener("touchstart", function() {
+				element.addEventListener("touchstart", function() {
 					alert("touch start");			
 				}, false);
-				this.canvas.addEventListener("touchmove", function() {
+				element.addEventListener("touchmove", function() {
 					alert("touch move");
 				}, false);	
 			}
