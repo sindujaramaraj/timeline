@@ -213,35 +213,35 @@
             }), false);
             navigator.appendChild(upBtn);
             navigator.appendChild(downBtn);
-            this.plotArea.appendChild(navigator);
+            this.canvas.parentNode.appendChild(navigator);
         },
-		addTouchEvents: function(element) {
-			if (isMobile) {
-				var me = this;				
-				element.addEventListener("touchstart", function() {
-					TOUCH_STATE = 1;
-				}, false);				
-				element.addEventListener("touchmove", function() {
-					if (TOUCH_STATE == 1) {
-						interval = setInterval(function() {
-		                	me.plotArea.moveDown();
-		            	}, 0);
-						TOUCH_STATE = 2;
-					}
-				}, false);
-				element.addEventListener("touchend", function() {
-					if (TOUCH_STATE == 2) {
-						TOUCH_STATE = 0;
-						me.plotArea.stopMoving();
-					}
-				}, false);
+        addTouchEvents: function(element) {
+            if (isMobile) {
+                var me = this;				
+                element.addEventListener("touchstart", function() {
+                    TOUCH_STATE = 1;
+                }, false);				
+                element.addEventListener("touchmove", function() {
+                    if (TOUCH_STATE == 1) {
+	                    interval = setInterval(function() {
+                        	me.plotArea.moveDown();
+                    	}, 0);
+	                    TOUCH_STATE = 2;
+                    }
+                }, false);
+                element.addEventListener("touchend", function() {
+                    if (TOUCH_STATE == 2) {
+	                    TOUCH_STATE = 0;
+	                    me.plotArea.stopMoving();
+                    }
+                }, false);
 
-				//prevent scrolling
-				document.body.addEventListener('touchmove', function(event) {
-  					event.preventDefault();
-				}, false); 					
-			}
-		}
+                //prevent scrolling
+                document.body.addEventListener('touchmove', function(event) {
+                    event.preventDefault();
+                }, false); 					
+            }
+        }
     }
 
     function PlotArea(plotAreaDiv, config) {
@@ -253,7 +253,7 @@
     }
 
     PlotArea.finalHeight = 200;
-    PlotArea.moveConstant = PlotArea.constant = 4;
+    PlotArea.moveConstant = PlotArea.constant = 1;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
@@ -313,13 +313,13 @@
             this.area.appendChild(child);
         },
         moveUp: function() {
-			this.controlSpeed();            
-			this.firstPlotHeight -= PlotArea.moveConstant;
+            this.controlSpeed();            
+            this.firstPlotHeight -= PlotArea.moveConstant;
             this.currentHeight -= PlotArea.moveConstant;
             this._adjust(PlotArea_factorMoveUp, PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
         },
         moveDown: function() {
-			this.firstPlotHeight += PlotArea.moveConstant;
+            this.firstPlotHeight += PlotArea.moveConstant;
             this.currentHeight += PlotArea.moveConstant;
             this._adjust(PlotArea_factorMoveDown, PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
 			this.controlSpeed();
@@ -337,13 +337,11 @@
         stopMoving: function() {	    
             this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
             speedDown = true;
-            this.elapsedTime = 0.0;
-            this.startTime = new Date().getTime();
         }
     };
 
     function PlotArea_factorMoveUp(factor) {
-        return factor/0.85;
+        return factor*0.85;
     }
 
     function PlotArea_factorMoveDown(factor) {
@@ -383,7 +381,15 @@
         },
         getCurrentAltitude: function() {
             return this.currentAltitude;
-        }
+        },
+        moveUp: function() {
+            this.t += PlotArea.moveConstant;
+            this._adjustPosition();
+        },
+        moveDown: function() {
+            this.t -= PlotArea.moveConstant;
+            this._adjustPosition();
+        },
     };
 
     function EventPlot(parentContainer, config) {
@@ -448,14 +454,6 @@
         },
         getDate: function() {
             return this.date;
-        },
-        moveUp: function() {
-            this.t += PlotArea.moveConstant;
-            this._adjustPosition();
-        },
-        moveDown: function() {
-            this.t -= PlotArea.moveConstant;
-            this._adjustPosition();
         },
         _adjustPosition: function() {
             var cp1 = this._calculateCP1(this.t);
@@ -544,14 +542,6 @@
             return calculateCurvePoint(t, {x:this.bottomX2, y:0},
                                             {x:this.topX2, y: this.totalHeight/2},
                                             {x: this.topX2, y: this.totalHeight});
-        },
-        moveUp: function() {
-            this.t += PlotArea.moveConstant;
-            this._adjustPosition();
-        },
-        moveDown: function() {
-            this.t -= PlotArea.moveConstant;
-            this._adjustPosition();
         },
         _adjustPosition: function() {
             var cp1 = this._calculateCP1(this.t);
@@ -664,6 +654,8 @@
     }
 
     function runInTimer(instance, callback) {
+        interval && clearInterval(interval);        
+        //calculate time required for running a call        
         var startTime = new Date().getTime();
 	    instance[callback]();							
         var endTime = new Date().getTime();
