@@ -222,7 +222,7 @@
                     if (event.targetTouches.length == 1) {
                         if (TOUCH_STATE == 0) {
                             TOUCH_STATE = 1;
-                            TOUCH_Y = event.targetTouches[0].pageY); 
+                            TOUCH_Y = event.targetTouches[0].pageY; 
                         } else {
                             TOUCH_STATE = 0;                            
                             me.plotArea.stopMoving();
