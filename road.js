@@ -346,9 +346,10 @@
             }
             if (PlotArea.moveConstant <= 0) {
                 console.log("count is " + count);	            
+                console.log("Time taken is " + new Date().getTime() - tTime);
                 clearInterval(interval);
 	            PlotArea.moveConstant = PlotArea.constant;
-	            speedDown = false;
+	            speedDown = false;                
             }
         },
         stopMoving: function() {	    
@@ -589,14 +590,14 @@
 				});
     }
     
-    var count = 0;
+    var count = 0, var tTime;
 
     function runInTimer(instance, callback) {
         interval && clearInterval(interval);        
         //calculate time required for running a call        
         var startTime = new Date().getTime();
 	    instance[callback]();							
-        var endTime = new Date().getTime();
+        tTime = var endTime = new Date().getTime();
         instance.roundTime  = endTime - startTime;
         console.log("rondtime" + callback + " " + instance.roundTime);
         count = 0;        
