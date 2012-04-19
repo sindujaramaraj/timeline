@@ -67,6 +67,10 @@ body {
     text-align: center;
 }
 
+.plotContainer {
+    background: red;
+}
+
 .plotArea, .plotContainer {
     position: absolute;
     overflow: hidden;

@@ -422,7 +422,7 @@
                 pDiv.id = this.config.id;
                 var pImage = new Image();
                 var imgsrc = this.config.icon || "image/pin.png";
-                pDiv.appendChild(pImage);
+                //pDiv.appendChild(pImage);
 				pDiv.onmouseover = highlightEventPlot;
 				pDiv.onmouseout = removeHighlightEventPlot;
                 this.parentContainer.appendChild(pDiv);
@@ -601,8 +601,8 @@
         return function() {
             var widthFactor = imageInfo[image.src];
             if (!imageInfo[image.src]) {
-                var height = image.offsetHeight;
-                var width = image.offsetWidth;
+                var height = image.offsetHeight|| 20;
+                var width = image.offsetWidth || 20;
                 widthFactor = parseFloat(width/height);
                 imageInfo[image.src] = widthFactor;
             }
