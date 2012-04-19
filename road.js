@@ -249,11 +249,12 @@
         this.height = this.currentHeight = config.height;
         this.width = config.width;
         this.plotElements = [];
-        this.firstPlotHeight = PlotArea.finalHeight;
+        this.firstPlotHeight = this.getFirstPlotHeight();
     }
 
-    PlotArea.finalHeight = 200;
-    PlotArea.moveConstant = PlotArea.constant = 1;
+    //TODO - make below constant as configs    
+    PlotArea.moveConstant = PlotArea.constant = 3;
+    PlotArea.factorConstant = 0.73;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
@@ -262,7 +263,7 @@
             this._render(this.height, this.firstPlotHeight);
         },
         _render: function(height, firstLayerHeight) {
-            var currentYear = this.startingYear;
+            var currentYear = this.endingYear;
             var currentDate;
             var layerHeight = firstLayerHeight;
             var currentAltitude = height;
@@ -272,7 +273,7 @@
                 if (currentDate.getFullYear() != currentYear) {
                     var diff = currentYear - currentDate.getFullYear();
                     while( diff > 0) {
-                        layerHeight *= 0.85;
+                        layerHeight *= PlotArea.factorConstant;
                         currentAltitude -= layerHeight;
                         diff--;
                     }
@@ -282,9 +283,9 @@
                 this.plotElements[idx].render(currentAltitude, layerHeight);
             }
         },
-        _adjust: function(factorFunction, altitudeFunction, lhFuntion) {
+        _adjust: function(altitudeFunction, lhFuntion) {
             var factor = PlotArea.moveConstant;
-            var currentYear = this.startingYear;
+            var currentYear = this.endingYear;
             var currentDate;
             var layerHeight = this.firstPlotHeight;
             var currentAltitude = this.currentHeight;
@@ -294,7 +295,7 @@
                 if (currentDate.getFullYear() != currentYear) {
                     var diff = currentYear - currentDate.getFullYear();
                     while( diff > 0) {
-                        factor = factorFunction(factor);
+                        factor *= PlotArea.factorConstant;
                         var altitude = altitudeFunction(factor, this.plotElements[idx].getCurrentAltitude());
                         layerHeight = lhFuntion(currentAltitude, altitude);
                         currentAltitude = altitude;
@@ -313,15 +314,15 @@
             this.area.appendChild(child);
         },
         moveUp: function() {
-            this.controlSpeed();            
-            this.firstPlotHeight -= PlotArea.moveConstant;
-            this.currentHeight -= PlotArea.moveConstant;
-            this._adjust(PlotArea_factorMoveUp, PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
+            this.currentHeight -= PlotArea.moveConstant;            
+            this.firstPlotHeight = this.getFirstPlotHeight();            
+            this._adjust(PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
+            this.controlSpeed();          
         },
         moveDown: function() {
-            this.firstPlotHeight += PlotArea.moveConstant;
-            this.currentHeight += PlotArea.moveConstant;
-            this._adjust(PlotArea_factorMoveDown, PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
+            this.currentHeight += PlotArea.moveConstant;            
+            this.firstPlotHeight = this.getFirstPlotHeight();            
+            this._adjust(PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
 			this.controlSpeed();
         },
         controlSpeed: function() {
@@ -337,16 +338,11 @@
         stopMoving: function() {	    
             this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
             speedDown = true;
+        },
+        getFirstPlotHeight: function() {
+            return this.currentHeight/PlotArea.factorConstant - this.currentHeight;
         }
     };
-
-    function PlotArea_factorMoveUp(factor) {
-        return factor*0.85;
-    }
-
-    function PlotArea_factorMoveDown(factor) {
-        return factor*0.85;
-    }
 
     function PlotArea_calculateAltitudeMoveUp(factor, currentAltitude) {
         return currentAltitude - factor;
