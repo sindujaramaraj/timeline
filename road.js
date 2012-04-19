@@ -213,35 +213,35 @@
             }), false);
             navigator.appendChild(upBtn);
             navigator.appendChild(downBtn);
-            this.plotArea.appendChild(navigator);
+            this.canvas.parentNode.appendChild(navigator);
         },
-		addTouchEvents: function(element) {
-			if (isMobile) {
-				var me = this;				
-				element.addEventListener("touchstart", function() {
-					TOUCH_STATE = 1;
-				}, false);				
-				element.addEventListener("touchmove", function() {
-					if (TOUCH_STATE == 1) {
-						interval = setInterval(function() {
-		                	me.plotArea.moveDown();
-		            	}, 0);
-						TOUCH_STATE = 2;
-					}
-				}, false);
-				element.addEventListener("touchend", function() {
-					if (TOUCH_STATE == 2) {
-						TOUCH_STATE = 0;
-						me.plotArea.stopMoving();
-					}
-				}, false);
+        addTouchEvents: function(element) {
+            if (isMobile) {
+                var me = this;				
+                element.addEventListener("touchstart", function() {
+                    TOUCH_STATE = 1;
+                }, false);				
+                element.addEventListener("touchmove", function() {
+                    if (TOUCH_STATE == 1) {
+	                    interval = setInterval(function() {
+                        	me.plotArea.moveDown();
+                    	}, 0);
+	                    TOUCH_STATE = 2;
+                    }
+                }, false);
+                element.addEventListener("touchend", function() {
+                    if (TOUCH_STATE == 2) {
+	                    TOUCH_STATE = 0;
+	                    me.plotArea.stopMoving();
+                    }
+                }, false);
 
-				//prevent scrolling
-				document.body.addEventListener('touchmove', function(event) {
-  					event.preventDefault();
-				}, false); 					
-			}
-		}
+                //prevent scrolling
+                document.body.addEventListener('touchmove', function(event) {
+                    event.preventDefault();
+                }, false); 					
+            }
+        }
     }
 
     function PlotArea(plotAreaDiv, config) {
@@ -249,11 +249,12 @@
         this.height = this.currentHeight = config.height;
         this.width = config.width;
         this.plotElements = [];
-        this.firstPlotHeight = PlotArea.finalHeight;
+        this.firstPlotHeight = this.getFirstPlotHeight();
     }
 
-    PlotArea.finalHeight = 200;
-    PlotArea.moveConstant = PlotArea.constant = 4;
+    //TODO - make below constant as configs    
+    PlotArea.moveConstant = PlotArea.constant = 3;
+    PlotArea.factorConstant = 0.73;
 
     PlotArea.prototype = {
         render: function(startingYear, endingYear) {
@@ -262,7 +263,7 @@
             this._render(this.height, this.firstPlotHeight);
         },
         _render: function(height, firstLayerHeight) {
-            var currentYear = this.startingYear;
+            var currentYear = this.endingYear;
             var currentDate;
             var layerHeight = firstLayerHeight;
             var currentAltitude = height;
@@ -272,7 +273,7 @@
                 if (currentDate.getFullYear() != currentYear) {
                     var diff = currentYear - currentDate.getFullYear();
                     while( diff > 0) {
-                        layerHeight *= 0.85;
+                        layerHeight *= PlotArea.factorConstant;
                         currentAltitude -= layerHeight;
                         diff--;
                     }
@@ -282,21 +283,22 @@
                 this.plotElements[idx].render(currentAltitude, layerHeight);
             }
         },
-        _adjust: function(factorFunction, altitudeFunction, lhFuntion) {
+        _adjust: function(altitudeFunction) {
             var factor = PlotArea.moveConstant;
-            var currentYear = this.startingYear;
+            var currentYear = this.endingYear;
             var currentDate;
             var layerHeight = this.firstPlotHeight;
             var currentAltitude = this.currentHeight;
+            var altitude;
 
             for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
                 currentDate = this.plotElements[idx].date;
                 if (currentDate.getFullYear() != currentYear) {
                     var diff = currentYear - currentDate.getFullYear();
                     while( diff > 0) {
-                        factor = factorFunction(factor);
-                        var altitude = altitudeFunction(factor, this.plotElements[idx].getCurrentAltitude());
-                        layerHeight = lhFuntion(currentAltitude, altitude);
+                        factor *= PlotArea.factorConstant;
+                        altitude = altitudeFunction(factor, this.plotElements[idx].getCurrentAltitude());
+                        layerHeight = currentAltitude - altitude;
                         currentAltitude = altitude;
                         diff--;
                     }
@@ -313,20 +315,20 @@
             this.area.appendChild(child);
         },
         moveUp: function() {
-			this.controlSpeed();            
-			this.firstPlotHeight -= PlotArea.moveConstant;
-            this.currentHeight -= PlotArea.moveConstant;
-            this._adjust(PlotArea_factorMoveUp, PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
+            this.currentHeight -= PlotArea.moveConstant;            
+            this.firstPlotHeight = this.getFirstPlotHeight();            
+            this._adjust(PlotArea_calculateAltitudeMoveUp);
+            this.controlSpeed();          
         },
         moveDown: function() {
-			this.firstPlotHeight += PlotArea.moveConstant;
-            this.currentHeight += PlotArea.moveConstant;
-            this._adjust(PlotArea_factorMoveDown, PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
+            this.currentHeight += PlotArea.moveConstant;            
+            this.firstPlotHeight = this.getFirstPlotHeight();            
+            this._adjust(PlotArea_calculateAltitudeMoveDown);
 			this.controlSpeed();
         },
         controlSpeed: function() {
             if (speedDown) {
-	            PlotArea.moveConstant -= this.stopConstant;			
+                PlotArea.moveConstant -= this.stopConstant;			
             }
             if (PlotArea.moveConstant <= 0) {
 	            clearInterval(interval);
@@ -337,18 +339,11 @@
         stopMoving: function() {	    
             this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
             speedDown = true;
-            this.elapsedTime = 0.0;
-            this.startTime = new Date().getTime();
+        },
+        getFirstPlotHeight: function() {
+            return this.currentHeight/PlotArea.factorConstant - this.currentHeight;
         }
     };
-
-    function PlotArea_factorMoveUp(factor) {
-        return factor/0.85;
-    }
-
-    function PlotArea_factorMoveDown(factor) {
-        return factor*0.85;
-    }
 
     function PlotArea_calculateAltitudeMoveUp(factor, currentAltitude) {
         return currentAltitude - factor;
@@ -363,7 +358,7 @@
     }
 
     function PlotArea_calculateLHMoveDown(previousAltitude, currentAltitude) {
-        return currentAltitude - previousAltitude;
+        return previousAltitude - currentAltitude;
     }
 
     function MovableElement(parentContainer, config) {
@@ -383,7 +378,15 @@
         },
         getCurrentAltitude: function() {
             return this.currentAltitude;
-        }
+        },
+        moveUp: function() {
+            this.t += PlotArea.moveConstant;
+            this._adjustPosition();
+        },
+        moveDown: function() {
+            this.t -= PlotArea.moveConstant;
+            this._adjustPosition();
+        },
     };
 
     function EventPlot(parentContainer, config) {
@@ -448,14 +451,6 @@
         },
         getDate: function() {
             return this.date;
-        },
-        moveUp: function() {
-            this.t += PlotArea.moveConstant;
-            this._adjustPosition();
-        },
-        moveDown: function() {
-            this.t -= PlotArea.moveConstant;
-            this._adjustPosition();
         },
         _adjustPosition: function() {
             var cp1 = this._calculateCP1(this.t);
@@ -544,14 +539,6 @@
             return calculateCurvePoint(t, {x:this.bottomX2, y:0},
                                             {x:this.topX2, y: this.totalHeight/2},
                                             {x: this.topX2, y: this.totalHeight});
-        },
-        moveUp: function() {
-            this.t += PlotArea.moveConstant;
-            this._adjustPosition();
-        },
-        moveDown: function() {
-            this.t -= PlotArea.moveConstant;
-            this._adjustPosition();
         },
         _adjustPosition: function() {
             var cp1 = this._calculateCP1(this.t);
@@ -664,6 +651,8 @@
     }
 
     function runInTimer(instance, callback) {
+        interval && clearInterval(interval);        
+        //calculate time required for running a call        
         var startTime = new Date().getTime();
 	    instance[callback]();							
         var endTime = new Date().getTime();
