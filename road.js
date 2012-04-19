@@ -218,20 +218,32 @@
         addTouchEvents: function(element) {
             if (isMobile) {
                 var me = this;				
-                element.addEventListener("touchstart", function() {
-                    if (TOUCH_STATE == 0) {
-                        TOUCH_STATE = 1;
-                    }                    
+                element.addEventListener("touchstart", function(event) {
+                    if (event.targetTouches.length == 1) {
+                        if (TOUCH_STATE == 0) {
+                            TOUCH_STATE = 1;
+                            event.dataTransfer.setData("Text", event.targetTouches[0].pageX); 
+                        } else {
+                            TOUCH_STATE = 0;                            
+                            me.plotArea.stopMoving();
+                        }
+                    }
                 }, false);				
                 element.addEventListener("touchmove", function(event) {
-                    if (TOUCH_STATE == 1) {
-                        TOUCH_STATE = 2;	                    
-                        runInTimer(me.plotArea, "moveUp");                    	
+                    if (event.targetTouches.length == 1) {
+                        if(TOUCH_STATE == 1) {
+                            TOUCH_STATE = 2;
+                            var touchX = event.dataTransfer.getData("Text")	                    
+                            runInTimer(me.plotArea, event.targetTouches[0].pageX > touchX ? "moveDown" : "moveUp");                    	
+                        }
+                    } else {
+                         TOUCH_STATE = 0;                            
+                         me.plotArea.stopMoving();
                     }
                     event.preventDefault();
                     event.stopPropagation();
                 }, false);
-                element.addEventListener("touchend", function() {
+                element.addEventListener("touchend", function(event) {
                     if (TOUCH_STATE == 2) {
 	                    TOUCH_STATE = 0;
 	                    me.plotArea.stopMoving();
