@@ -225,10 +225,8 @@
                 }, false);				
                 element.addEventListener("touchmove", function(event) {
                     if (TOUCH_STATE == 1) {
-	                    interval = setInterval(function() {
-                        	me.plotArea.moveDown();
-                    	}, 0);
-	                    TOUCH_STATE = 2;
+                        TOUCH_STATE = 2;	                    
+                        runInTimer(me.plotArea, "moveUp");                    	
                     }
                     event.preventDefault();
                     event.stopPropagation();
