@@ -219,7 +219,9 @@
             if (isMobile) {
                 var me = this;				
                 element.addEventListener("touchstart", function() {
-                    TOUCH_STATE = 1;
+                    if (TOUCH_STATE == 0) {
+                        TOUCH_STATE = 1;
+                    }                    
                 }, false);				
                 element.addEventListener("touchmove", function(event) {
                     if (TOUCH_STATE == 1) {
