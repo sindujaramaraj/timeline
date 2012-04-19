@@ -283,12 +283,13 @@
                 this.plotElements[idx].render(currentAltitude, layerHeight);
             }
         },
-        _adjust: function(altitudeFunction, lhFuntion) {
+        _adjust: function(altitudeFunction) {
             var factor = PlotArea.moveConstant;
             var currentYear = this.endingYear;
             var currentDate;
             var layerHeight = this.firstPlotHeight;
             var currentAltitude = this.currentHeight;
+            var altitude;
 
             for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
                 currentDate = this.plotElements[idx].date;
@@ -296,8 +297,8 @@
                     var diff = currentYear - currentDate.getFullYear();
                     while( diff > 0) {
                         factor *= PlotArea.factorConstant;
-                        var altitude = altitudeFunction(factor, this.plotElements[idx].getCurrentAltitude());
-                        layerHeight = lhFuntion(currentAltitude, altitude);
+                        altitude = altitudeFunction(factor, this.plotElements[idx].getCurrentAltitude());
+                        layerHeight = currentAltitude - altitude;
                         currentAltitude = altitude;
                         diff--;
                     }
@@ -316,18 +317,18 @@
         moveUp: function() {
             this.currentHeight -= PlotArea.moveConstant;            
             this.firstPlotHeight = this.getFirstPlotHeight();            
-            this._adjust(PlotArea_calculateAltitudeMoveUp, PlotArea_calculateLHMoveUp);
+            this._adjust(PlotArea_calculateAltitudeMoveUp);
             this.controlSpeed();          
         },
         moveDown: function() {
             this.currentHeight += PlotArea.moveConstant;            
             this.firstPlotHeight = this.getFirstPlotHeight();            
-            this._adjust(PlotArea_calculateAltitudeMoveDown, PlotArea_calculateLHMoveDown);
+            this._adjust(PlotArea_calculateAltitudeMoveDown);
 			this.controlSpeed();
         },
         controlSpeed: function() {
             if (speedDown) {
-	            PlotArea.moveConstant -= this.stopConstant;			
+                PlotArea.moveConstant -= this.stopConstant;			
             }
             if (PlotArea.moveConstant <= 0) {
 	            clearInterval(interval);
@@ -357,7 +358,7 @@
     }
 
     function PlotArea_calculateLHMoveDown(previousAltitude, currentAltitude) {
-        return currentAltitude - previousAltitude;
+        return previousAltitude - currentAltitude;
     }
 
     function MovableElement(parentContainer, config) {
