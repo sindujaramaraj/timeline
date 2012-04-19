@@ -340,11 +340,13 @@
 			this.controlSpeed();
         },
         controlSpeed: function() {
+            count++;            
             if (speedDown) {
                 PlotArea.moveConstant -= this.stopConstant;			
             }
             if (PlotArea.moveConstant <= 0) {
-	            clearInterval(interval);
+                console.log("count is " + count);	            
+                clearInterval(interval);
 	            PlotArea.moveConstant = PlotArea.constant;
 	            speedDown = false;
             }
@@ -586,6 +588,8 @@
 					position: [left, top]
 				});
     }
+    
+    var count = 0;
 
     function runInTimer(instance, callback) {
         interval && clearInterval(interval);        
@@ -595,6 +599,7 @@
         var endTime = new Date().getTime();
         instance.roundTime  = endTime - startTime;
         console.log("rondtime" + callback + " " + instance.roundTime);
+        count = 0;        
         interval = setInterval(function() {
             instance[callback]();				
         }, 0);
