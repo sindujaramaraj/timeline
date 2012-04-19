@@ -366,14 +366,6 @@
         return currentAltitude + factor;
     }
 
-    function PlotArea_calculateLHMoveUp(previousAltitude, currentAltitude) {
-        return previousAltitude - currentAltitude;
-    }
-
-    function PlotArea_calculateLHMoveDown(previousAltitude, currentAltitude) {
-        return previousAltitude - currentAltitude;
-    }
-
     function MovableElement(parentContainer, config) {
         this.parentContainer = parentContainer;
         this.config = config;
@@ -391,15 +383,7 @@
         },
         getCurrentAltitude: function() {
             return this.currentAltitude;
-        },
-        moveUp: function() {
-            this.t += PlotArea.moveConstant;
-            this._adjustPosition();
-        },
-        moveDown: function() {
-            this.t -= PlotArea.moveConstant;
-            this._adjustPosition();
-        },
+        }
     };
 
     function EventPlot(parentContainer, config) {
@@ -464,32 +448,6 @@
         },
         getDate: function() {
             return this.date;
-        },
-        _adjustPosition: function() {
-            var cp1 = this._calculateCP1(this.t);
-            var cp2 = this._calculateCP2(this.t);
-            var top = this.totalHeight - cp1.y;
-            var height = this._calculateHeight(top);
-            var xDiff = (cp2.x - cp1.x)/2;
-            this.image.height = height;
-            this.image.width = height * imageInfo[this.image.src];
-            applyStyle(this.element, {
-                top: (top - height) + "px",
-                left: (cp1.x + xDiff - (this.image.offsetWidth/2)) + "px",
-                height: height + "px",
-                width: this.image.offsetWidth + "px"
-            });
-        },
-        adjustToHeight: function(baseTop, yearLength) {
-            var position = this._calculateLeftAndTop(baseTop, yearLength);
-            this.image.height = position.height;
-            this.image.width = position.height * imageInfo[this.image.src];
-            applyStyle(this.element, {
-                top: (position.top - position.height) + "px",
-                left: (position.left - (this.image.offsetWidth/2)) + "px",
-                height: position.height,
-                width: this.image.offsetWidth + "px"
-            });
         }
     });
 
@@ -552,40 +510,6 @@
             return calculateCurvePoint(t, {x:this.bottomX2, y:0},
                                             {x:this.topX2, y: this.totalHeight/2},
                                             {x: this.topX2, y: this.totalHeight});
-        },
-        _adjustPosition: function() {
-            var cp1 = this._calculateCP1(this.t);
-            var top = this.totalHeight - cp1.y;
-            if (top < 0 || top > this.totalHeight) {
-                this.divider.style.display = "none";
-                this.text.style.display = "none";
-                return;
-            }
-            var cp2 = this._calculateCP2(this.t);
-
-            applyStyle(this.divider, {
-                left: cp1.x + "px",
-                top: top + "px",
-                width: (cp2.x - cp1.x) + "px",
-                display: ""
-            });
-            applyStyle(this.text, {
-                left: cp2.x + "px",
-                top: top + "px",
-                display: ""
-            });
-        },
-        adjustToHeight: function(baseTop) {
-            var position = this._calculateWidth(baseTop);
-            applyStyle(this.divider, {
-                left: position.left + "px",
-                top: position.top + "px",
-                width: position.width + "px"
-            });
-            applyStyle(this.text, {
-                left: position.left + position.width + "px",
-                top: position.top + "px"
-            });
         }
     });
 
@@ -670,6 +594,7 @@
 	    instance[callback]();							
         var endTime = new Date().getTime();
         instance.roundTime  = endTime - startTime;
+        console.log("rondtime" + callback + " " + instance.roundTime);
         interval = setInterval(function() {
             instance[callback]();				
         }, 0);
