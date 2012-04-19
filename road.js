@@ -9,7 +9,7 @@
 	var imageInfo = {};
 	var lanePositionInfo = {};
 	var nol;
-	var interval, speedDown = false, TOUCH_STATE = 0;
+	var interval, speedDown = false, TOUCH_STATE = 0, TOUCH_Y;
 	var eventPlots = {};
 	var isMobile = detectMobile();
 	var stopTime = 1500; //1.5s
@@ -222,7 +222,7 @@
                     if (event.targetTouches.length == 1) {
                         if (TOUCH_STATE == 0) {
                             TOUCH_STATE = 1;
-                            event.dataTransfer.setData("Text", event.targetTouches[0].pageX); 
+                            TOUCH_Y = event.targetTouches[0].pageY); 
                         } else {
                             TOUCH_STATE = 0;                            
                             me.plotArea.stopMoving();
@@ -233,8 +233,7 @@
                     if (event.targetTouches.length == 1) {
                         if(TOUCH_STATE == 1) {
                             TOUCH_STATE = 2;
-                            var touchX = event.dataTransfer.getData("Text")	                    
-                            runInTimer(me.plotArea, event.targetTouches[0].pageX > touchX ? "moveDown" : "moveUp");                    	
+                            runInTimer(me.plotArea, event.targetTouches[0].pageY > TOUCH_Y ? "moveDown" : "moveUp");                    	
                         }
                     } else {
                          TOUCH_STATE = 0;                            
