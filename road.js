@@ -305,6 +305,7 @@
             var altitude;
 
             for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
+                pTime = new Date().getTime();                
                 currentDate = this.plotElements[idx].date;
                 if (currentDate.getFullYear() != currentYear) {
                     var diff = currentYear - currentDate.getFullYear();
@@ -317,8 +318,11 @@
                     }
                     currentYear = currentDate.getFullYear();
                 }
+                tText = "Count " + count + " Calculation time: " + (new Date().getTime() - pTime);
+                pTime = new Date().getTime();
                 this.plotElements[idx].setCurrentAltitude(currentAltitude);
                 this.plotElements[idx].render(currentAltitude, layerHeight);
+                console.log(tText + " Render time: " + (new Date().getTime() - pTime));
             }
         },
         addPlotElement: function(plotElements) {
@@ -334,6 +338,8 @@
             this.controlSpeed();          
         },
         moveDown: function() {
+            console.log("Time taken to reach again: " + (new Date().getTime() - tTime));
+            tTime = new Date().getTime();            
             this.currentHeight += PlotArea.moveConstant;            
             this.firstPlotHeight = this.getFirstPlotHeight();            
             this._adjust(PlotArea_calculateAltitudeMoveDown);
@@ -592,7 +598,7 @@
 				});
     }
     
-    var count = 0, tTime;
+    var count = 0, tTime, tText, pTime;
 
     function runInTimer(instance, callback) {
         interval && clearInterval(interval);        
