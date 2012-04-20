@@ -9,7 +9,7 @@
 	var imageInfo = {};
 	var lanePositionInfo = {};
 	var nol;
-	var interval, speedDown = false, TOUCH_STATE = 0, TOUCH_Y;
+	var speedDown = false, stopAnimation = false, TOUCH_STATE = 0, TOUCH_Y;
 	var eventPlots = {};
 	var isMobile = detectMobile();
 	var stopTime = 1500; //1.5s by default. can be overriden by the value from configuration
@@ -266,7 +266,7 @@
     }
 
     //TODO - make below constant as configs    
-    PlotArea.moveConstant = PlotArea.constant = 3;
+    PlotArea.moveConstant = PlotArea.constant = 5;
     PlotArea.factorConstant = 0.73;
 
     PlotArea.prototype = {
@@ -356,10 +356,10 @@
             if (PlotArea.moveConstant <= 0) {
                 console.log("count is " + count);	            
                 console.log("Time taken is " + (new Date().getTime() - tTime));
-                //clearInterval(interval);
-                interval = 0;
+                
 	            PlotArea.moveConstant = PlotArea.constant;
-	            speedDown = false;                
+	            speedDown = false;
+                stopAnimation = true;
             }
             tTime = new Date().getTime();
         },
@@ -604,8 +604,7 @@
     var count = 0, tTime, tText, pTime;
 
     function runInTimer(instance, callback) {
-        interval = 1;        
-        //interval && clearInterval(interval);        
+        stopAnimation = false;        
         //calculate time required for running a call        
         var startTime = new Date().getTime();
 	    instance[callback]();							
@@ -614,12 +613,28 @@
         instance.roundTime  = endTime - startTime;
         console.log("roundtime" + callback + " " + instance.roundTime);
         count = 0;        
-        var timeCallback = function() {
-            instance[callback]();
-            interval && setTimeout(timeCallback, 0);
-        };
-        setTimeout(timeCallback, 0);
+        /*interval = setInterval(function() {
+            instance[callback]();				
+        }, 0);*/
+
+        (function animloop(){
+            if (stopAnimation) return;            
+            instance[callback]();	              
+            requestAnimFrame(animloop);              
+        })(); 
     }
+
+    // shim layer with setTimeout fallback
+    window.requestAnimFrame = (function(){
+      return  window.requestAnimationFrame       || 
+              window.webkitRequestAnimationFrame || 
+              window.mozRequestAnimationFrame    || 
+              window.oRequestAnimationFrame      || 
+              window.msRequestAnimationFrame     || 
+              function( callback ){
+                window.setTimeout(callback, 1000 / 60);
+              };
+    })();
 
     window.Road = Road;
 })();
