@@ -340,6 +340,7 @@
 			this.controlSpeed();
         },
         controlSpeed: function() {
+            console.log("Count " + count + " took " + (new Date().getTime() - tTime));
             count++;            
             if (speedDown) {
                 PlotArea.moveConstant -= this.stopConstant;			
@@ -351,6 +352,7 @@
 	            PlotArea.moveConstant = PlotArea.constant;
 	            speedDown = false;                
             }
+            tTime = new Date().getTime();
         },
         stopMoving: function() {	    
             this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
@@ -600,7 +602,7 @@
         var endTime = new Date().getTime();
         tTime = endTime;
         instance.roundTime  = endTime - startTime;
-        console.log("rondtime" + callback + " " + instance.roundTime);
+        console.log("roundtime" + callback + " " + instance.roundTime);
         count = 0;        
         interval = setInterval(function() {
             instance[callback]();				
