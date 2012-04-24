@@ -220,9 +220,13 @@
                 var me = this;				
                 element.addEventListener("touchstart", function(event) {
                     if (event.targetTouches.length == 1) {
-                        TOUCH_STATE = 1
-                        me.plotArea.restoreMovingState();
-                        TOUCH_Y = event.targetTouches[0].pageY;
+                        if (TOUCH_STATE == 0) {
+                            TOUCH_STATE = 1;
+                            TOUCH_Y = event.targetTouches[0].pageY; 
+                        } else {
+                            TOUCH_STATE = 0;                            
+                            me.plotArea.stopMoving();
+                        }
                     }
                 }, false);				
                 element.addEventListener("touchmove", function(event) {
@@ -262,7 +266,7 @@
     }
 
     //TODO - make below constant as configs    
-    PlotArea.moveConstant = PlotArea.constant = 5;
+    PlotArea.moveConstant = PlotArea.constant = 3;
     PlotArea.factorConstant = 0.73;
 
     PlotArea.prototype = {
@@ -340,13 +344,10 @@
                 PlotArea.moveConstant -= this.stopConstant;			
             }
             if (PlotArea.moveConstant <= 0) {
-                this.restoreMovingState();
+                clearInterval(interval);
+	            PlotArea.moveConstant = PlotArea.constant;
+	            speedDown = false;                
             }
-        },
-        restoreMovingState: function() {
-            clearInterval(interval);
-            PlotArea.moveConstant = PlotArea.constant;
-            speedDown = false;
         },
         stopMoving: function() {	    
             this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
@@ -398,7 +399,7 @@
         render: function (baseTop, yearLength) {
             var position = this._calculateLeftAndTop(baseTop, yearLength);
             if (this.isRendered) {
-                setWidthFactor(this.image, this.element, position)();
+                calculateWidthFactor(this.image, this.element, position)();
             } else {
                 var pDiv = document.createElement("div");
                 pDiv.className = "plotContainer";
@@ -522,27 +523,23 @@
 
     function calculateWidthFactor(image, div, position) {
         return function() {
-            setWidthFactor(image, div, position);
+            var widthFactor = imageInfo[image.src];
+            if (!imageInfo[image.src]) {
+                var height = image.offsetHeight;
+                var width = image.offsetWidth;
+                widthFactor = parseFloat(width/height);
+                imageInfo[image.src] = widthFactor;
+            }
+            image.height = position.height;
+            image.width = position.height * widthFactor;
+            applyStyle(div, {
+                    height: position.height + "px",
+                    width: position.height * widthFactor + "px",
+                    top: position.top - position.height + "px",
+                    left: position.left - (position.height * widthFactor/2) + "px",
+                    display: position.top < 0 ? "none" : ""
+            });
         }
-    }
-
-    function setWidthFactor(image, div, position) {
-        var widthFactor = imageInfo[image.src];
-        if (!imageInfo[image.src]) {
-            var height = image.offsetHeight;
-            var width = image.offsetWidth;
-            widthFactor = parseFloat(width/height);
-            imageInfo[image.src] = widthFactor;
-        }
-        image.height = position.height;
-        image.width = position.height * widthFactor;
-        applyStyle(div, {
-            height: position.height + "px",
-            width: position.height * widthFactor + "px",
-            top: position.top - position.height + "px",
-            left: position.left - (position.height * widthFactor/2) + "px",
-            display: position.top < 0 ? "none" : ""
-        });
     }
 
     function calculateCurvePoint(t, P0, P1, P2) {
@@ -599,7 +596,12 @@
         instance.roundTime  = endTime - startTime;
         interval = setInterval(function() {
             instance[callback]();				
-        }, 1000/60);
+        }, 0);
+
+        (function animloop(){
+          requestAnimFrame(animloop);
+          render();
+        })();
     }
 
     window.Road = Road;

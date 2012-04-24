@@ -1,0 +1,92 @@
+body {
+	overflow: hidden;
+	padding: 0;
+}
+
+.canvas_container {
+	width: 940px;
+    height: 100%;                
+    margin: auto;
+    z-index: -5;
+}
+
+.mobile_layer { 
+	position: absolute;
+	width: 940px;
+	z-index: 50;
+}
+
+.plot {
+	position: absolute;
+    z-index: 1;
+}
+            
+/* commons */
+.fLeft {
+    float: left;
+}
+
+.fRight {
+    float: right;
+}
+
+.cloud {
+    position: absolute;
+    z-index: 100;
+}
+
+.cloudlet {
+    background: white;
+}
+
+.road {
+    z-index: -1;
+}
+
+.scale {
+    background: url(image/scale.png) no-repeat;
+    height: 35px;
+    width: 100%;
+	position: absolute;
+    background-color: white;
+    z-index: 2;
+}
+
+.headers {
+    position: absolute;
+    height: 85px;
+    width: 100%;
+}
+
+.header {
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+}
+
+.plotArea, .plotContainer {
+    position: absolute;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.divider {
+    position: absolute;
+    background: #000;
+    height: 2px;
+    z-index: 0;
+}
+
+.dividerText {
+    font-weight: bold;
+    position: absolute;
+}
+
+.navigator {
+    position: absolute;
+    z-index: 3;
+    top: 0px;
+}

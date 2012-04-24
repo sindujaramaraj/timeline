@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <title>Road</title>
+        <link type="text/css" rel="stylesheet" href="road.css"></link>
+    </head>
+    
+    <body>
+        <!--div style="height:300px;font-size: 17px;">This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. <p>This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. This is some dummy content to show the road better. </p></div-->
+        <div class="canvas_container" id="roadDiv"></div>
+	<div id="dialog" title="Basic dialog" style="display:none">
+		<p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+	</div>
+    </body>
+    <script src="road.js"></script>
+    <script>
+        //generate color information for these columns
+        var columns = ["Job Info", "Job Relation", "Comp Info", "Address Info", "Personal Info", "Name Info", "Work Permit Info", "Emp Info", "Org Info"];
+        var cColors = ["red", "green", "blue", "yellow", "orange", "pink"];
+        var columnData;
+        var road, context, rWidth, rHeight, topWidth, plot;
+        var transRegHeight, floater, topTransRegion, plotArea;
+        var eachPathWidth, eachTopPathWidth, nop; 
+        var playbackDiv, scaleMoveUnit;
+        var unitSpace = 200, startingYear = 2000, currentYear = 2011;
+        
+        var canvasContainer = document.getElementById("roadDiv");        
+        var road = new Road(canvasContainer,
+                         {
+                            laneHeaders: columns,
+                            pointerColours: cColors,
+                            plots: [
+                                        {id: 1, date: "July 20, 2006", event: "", icon:"", lane: 1, data:"User is hired"},
+                                        {id: 2, date: "July 20, 2007", event: "", icon:"", lane: 9, data: "User manager is changed"}, 
+                                        {id: 3, date: "July 20, 2008", event: "", icon:"", lane: 1, data: "User is badged for good work"},
+                                        {id: 4, date: "May 20, 2009", event: "", icon:"", lane: 1, data: "User is promoted to SSE"},
+                                        {id: 5, date: "September 16, 2010", event: "", icon:"", lane: 3, data: "User is allocated bonus"},
+										{id: 6, date: "January 16, 2011", event: "", icon:"", lane: 4, data: "User address is changed"},
+										{id: 7, date: "September 16, 2012", event: "", icon:"", lane: 2, data: "User HR changed"},
+										{id: 8, date: "September 16, 2013", event: "", icon:"", lane: 6},
+										{id: 9, date: "December 20, 2006", event: "", icon:"", lane: 1, data:"User is hired"},
+										{id: 10, date: "January 20, 2007", event: "", icon:"", lane: 9, data: "User manager is changed"}, 
+                                        {id: 11, date: "July 20, 2010", event: "", icon:"", lane: 1, data: "User is badged for good work"},
+                                        {id: 12, date: "May 20, 2009", event: "", icon:"", lane: 5, data: "User is promoted to SSE"},
+                                        {id: 13, date: "September 16, 2010", event: "", icon:"", lane: 3, data: "User is allocated bonus"},
+										{id: 14, date: "January 16, 2011", event: "", icon:"", lane: 5, data: "User address is changed"},
+										{id: 15, date: "March 16, 2012", event: "", icon:"", lane: 2, data: "User HR changed"},
+										{id: 16, date: "May 16, 2013", event: "", icon:"", lane: 6, data: "US permit"},
+										{id: 17, date: "September 16, 2013", event: "", icon:"", lane: 6, data: "Europe permit"}
+                                    ]
+                         });
+        road.create();
+    </script>
+</html>
