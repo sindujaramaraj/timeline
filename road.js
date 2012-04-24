@@ -9,7 +9,7 @@
 	var imageInfo = {};
 	var lanePositionInfo = {};
 	var nol;
-	var speedDown = false, stopAnimation = false, TOUCH_STATE = 0, TOUCH_Y;
+	var interval, speedDown = false, TOUCH_STATE = 0, TOUCH_Y;
 	var eventPlots = {};
 	var isMobile = detectMobile();
 	var stopTime = 1500; //1.5s by default. can be overriden by the value from configuration
@@ -305,7 +305,6 @@
             var altitude;
 
             for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
-                //pTime = new Date().getTime();                
                 currentDate = this.plotElements[idx].date;
                 if (currentDate.getFullYear() != currentYear) {
                     var diff = currentYear - currentDate.getFullYear();
@@ -318,11 +317,8 @@
                     }
                     currentYear = currentDate.getFullYear();
                 }
-                //tText = "Count " + count + " Calculation time: " + (new Date().getTime() - pTime);
-                //pTime = new Date().getTime();
                 this.plotElements[idx].setCurrentAltitude(currentAltitude);
                 this.plotElements[idx].render(currentAltitude, layerHeight);
-                //console.log(tText + " Render time: " + (new Date().getTime() - pTime));
             }
         },
         addPlotElement: function(plotElements) {
@@ -332,36 +328,26 @@
             this.area.appendChild(child);
         },
         moveUp: function() {
-            console.log("Time taken to reach again: " + (new Date().getTime() - tTime));
-            tTime = new Date().getTime(); 
             this.currentHeight -= PlotArea.moveConstant;            
             this.firstPlotHeight = this.getFirstPlotHeight();            
             this._adjust(PlotArea_calculateAltitudeMoveUp);
             this.controlSpeed();          
         },
         moveDown: function() {
-            console.log("Time taken to reach again: " + (new Date().getTime() - tTime));
-            tTime = new Date().getTime();            
             this.currentHeight += PlotArea.moveConstant;            
             this.firstPlotHeight = this.getFirstPlotHeight();            
             this._adjust(PlotArea_calculateAltitudeMoveDown);
 			this.controlSpeed();
         },
         controlSpeed: function() {
-            console.log("Count " + count + " took " + (new Date().getTime() - tTime));
-            count++;            
             if (speedDown) {
                 PlotArea.moveConstant -= this.stopConstant;			
             }
             if (PlotArea.moveConstant <= 0) {
-                console.log("count is " + count);	            
-                console.log("Time taken is " + (new Date().getTime() - tTime));
-                
+                clearInterval(interval);
 	            PlotArea.moveConstant = PlotArea.constant;
 	            speedDown = false;
-                stopAnimation = true;
             }
-            tTime = new Date().getTime();
         },
         stopMoving: function() {	    
             this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
@@ -601,40 +587,17 @@
 				});
     }
     
-    var count = 0, tTime, tText, pTime;
-
-    function runInTimer(instance, callback) {
-        stopAnimation = false;        
+   function runInTimer(instance, callback) {
+        interval && clearInterval(interval);        
         //calculate time required for running a call        
         var startTime = new Date().getTime();
 	    instance[callback]();							
         var endTime = new Date().getTime();
-        tTime = endTime;
         instance.roundTime  = endTime - startTime;
-        console.log("roundtime" + callback + " " + instance.roundTime);
-        count = 0;        
-        /*interval = setInterval(function() {
+        interval = setInterval(function() {
             instance[callback]();				
-        }, 0);*/
-
-        (function animloop(){
-            if (stopAnimation) return;            
-            instance[callback]();	              
-            requestAnimFrame(animloop);              
-        })(); 
+        }, 1);
     }
-
-    // shim layer with setTimeout fallback
-    window.requestAnimFrame = (function(){
-      return  window.requestAnimationFrame       || 
-              window.webkitRequestAnimationFrame || 
-              window.mozRequestAnimationFrame    || 
-              window.oRequestAnimationFrame      || 
-              window.msRequestAnimationFrame     || 
-              function( callback ){
-                window.setTimeout(callback, 1000 / 60);
-              };
-    })();
 
     window.Road = Road;
 })();
