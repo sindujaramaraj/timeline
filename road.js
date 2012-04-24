@@ -527,6 +527,7 @@
     }
 
     function setWidthFactor(image, div, position) {
+        var wtimer = new Date().getTime();
         var widthFactor = imageInfo[image.src];
         if (!imageInfo[image.src]) {
             var height = image.offsetHeight;
@@ -543,6 +544,7 @@
             left: position.left - (position.height * widthFactor/2) + "px",
             display: position.top < 0 ? "none" : ""
         });
+        console.log("calc time " + (new Date().getTime() - wtimer));
     }
 
     function calculateCurvePoint(t, P0, P1, P2) {
