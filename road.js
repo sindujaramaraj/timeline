@@ -221,7 +221,7 @@
                 element.addEventListener("touchstart", function(event) {
                     if (event.targetTouches.length == 1) {
                         TOUCH_STATE = 1
-                        me.restoreMovingState();
+                        me.plotArea.restoreMovingState();
                         TOUCH_Y = event.targetTouches[0].pageY;
                     }
                 }, false);				
