@@ -589,7 +589,9 @@
 					position: [left, top]
 				});
     }
-    
+
+   var aTime = new Date().getTime();
+
    function runInTimer(instance, callback) {
         interval && clearInterval(interval);        
         //calculate time required for running a call        
@@ -598,7 +600,9 @@
         var endTime = new Date().getTime();
         instance.roundTime  = endTime - startTime;
         interval = setInterval(function() {
-            instance[callback]();				
+            console.log("time taken " + (new Date().getTime() - aTime));
+            aTime = new Date().getTime();
+            instance[callback]();
         }, 1000/60);
     }
 
