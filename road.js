@@ -220,13 +220,9 @@
                 var me = this;				
                 element.addEventListener("touchstart", function(event) {
                     if (event.targetTouches.length == 1) {
-                        if (TOUCH_STATE == 0) {
-                            TOUCH_STATE = 1;
-                            TOUCH_Y = event.targetTouches[0].pageY; 
-                        } else {
-                            TOUCH_STATE = 0;                            
-                            me.plotArea.stopMoving();
-                        }
+                        TOUCH_STATE = 1
+                        me.restoreMovingState();
+                        TOUCH_Y = event.targetTouches[0].pageY;
                     }
                 }, false);				
                 element.addEventListener("touchmove", function(event) {
@@ -344,10 +340,13 @@
                 PlotArea.moveConstant -= this.stopConstant;			
             }
             if (PlotArea.moveConstant <= 0) {
-                clearInterval(interval);
-	            PlotArea.moveConstant = PlotArea.constant;
-	            speedDown = false;
+                this.restoreMovingState();
             }
+        },
+        restoreMovingState: function() {
+            clearInterval(interval);
+            PlotArea.moveConstant = PlotArea.constant;
+            speedDown = false;
         },
         stopMoving: function() {	    
             this.stopConstant = PlotArea.moveConstant/(stopTime/this.roundTime);			
