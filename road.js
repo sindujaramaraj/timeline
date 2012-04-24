@@ -300,6 +300,7 @@
             var currentAltitude = this.currentHeight;
             var altitude;
 
+            var ctimer = new Date().getTime();
             for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
                 currentDate = this.plotElements[idx].date;
                 if (currentDate.getFullYear() != currentYear) {
@@ -316,6 +317,7 @@
                 this.plotElements[idx].setCurrentAltitude(currentAltitude);
                 this.plotElements[idx].render(currentAltitude, layerHeight);
             }
+            console.log("ctimer " + (new Date().getTime() - ctimer));
         },
         addPlotElement: function(plotElements) {
             this.plotElements = this.plotElements.concat(plotElements);
@@ -527,7 +529,6 @@
     }
 
     function setWidthFactor(image, div, position) {
-        var wtimer = new Date().getTime();
         var widthFactor = imageInfo[image.src];
         if (!imageInfo[image.src]) {
             var height = image.offsetHeight;
@@ -544,7 +545,6 @@
             left: position.left - (position.height * widthFactor/2) + "px",
             display: position.top < 0 ? "none" : ""
         });
-        console.log("calc time " + (new Date().getTime() - wtimer));
     }
 
     function calculateCurvePoint(t, P0, P1, P2) {
