@@ -595,7 +595,7 @@
         instance.roundTime  = endTime - startTime;
         interval = setInterval(function() {
             instance[callback]();				
-        }, 1);
+        }, 1000/60);
     }
 
     window.Road = Road;
