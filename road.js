@@ -229,7 +229,6 @@
                     if (event.targetTouches.length == 1) {
                         if(TOUCH_STATE == 1) {
                             TOUCH_STATE = 2;
-                            console.log("call run in timer");
                             runInTimer(me.plotArea, event.targetTouches[0].pageY > TOUCH_Y ? "moveDown" : "moveUp");
                         }
                     } else {
@@ -331,10 +330,14 @@
             this.controlSpeed();          
         },
         moveDown: function() {
+            console.log("A " + (new Date().getTime() - aTime));
             this.currentHeight += PlotArea.moveConstant;            
-            this.firstPlotHeight = this.getFirstPlotHeight();            
+            this.firstPlotHeight = this.getFirstPlotHeight();
+            console.log("B " + (new Date().getTime() - aTime));
             this._adjust(PlotArea_calculateAltitudeMoveDown);
+            console.log("C " + (new Date().getTime() - aTime));
 			this.controlSpeed();
+            console.log("D " + (new Date().getTime() - aTime));
         },
         controlSpeed: function() {
             if (speedDown) {
@@ -604,6 +607,7 @@
             console.log("time taken " + (new Date().getTime() - aTime));
             aTime = new Date().getTime();
             instance[callback]();
+            console.log("after call " + (new Date().getTime() - aTime));
         }, 0);
     }
 
