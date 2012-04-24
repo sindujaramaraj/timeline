@@ -229,7 +229,8 @@
                     if (event.targetTouches.length == 1) {
                         if(TOUCH_STATE == 1) {
                             TOUCH_STATE = 2;
-                            runInTimer(me.plotArea, event.targetTouches[0].pageY > TOUCH_Y ? "moveDown" : "moveUp");                    	
+                            console.log("call run in timer");
+                            runInTimer(me.plotArea, event.targetTouches[0].pageY > TOUCH_Y ? "moveDown" : "moveUp");
                         }
                     } else {
                          TOUCH_STATE = 0;                            
@@ -300,7 +301,6 @@
             var currentAltitude = this.currentHeight;
             var altitude;
 
-            var ctimer = new Date().getTime();
             for (var idx = 0, len = this.plotElements.length; idx < len; idx++) {
                 currentDate = this.plotElements[idx].date;
                 if (currentDate.getFullYear() != currentYear) {
@@ -317,7 +317,6 @@
                 this.plotElements[idx].setCurrentAltitude(currentAltitude);
                 this.plotElements[idx].render(currentAltitude, layerHeight);
             }
-            console.log("ctimer " + (new Date().getTime() - ctimer));
         },
         addPlotElement: function(plotElements) {
             this.plotElements = this.plotElements.concat(plotElements);
