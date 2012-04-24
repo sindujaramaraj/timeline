@@ -398,7 +398,7 @@
         render: function (baseTop, yearLength) {
             var position = this._calculateLeftAndTop(baseTop, yearLength);
             if (this.isRendered) {
-                calculateWidthFactor(this.image, this.element, position)();
+                setWidthFactor(this.image, this.element, position);
             } else {
                 var pDiv = document.createElement("div");
                 pDiv.className = "plotContainer";
@@ -522,23 +522,27 @@
 
     function calculateWidthFactor(image, div, position) {
         return function() {
-            var widthFactor = imageInfo[image.src];
-            if (!imageInfo[image.src]) {
-                var height = image.offsetHeight;
-                var width = image.offsetWidth;
-                widthFactor = parseFloat(width/height);
-                imageInfo[image.src] = widthFactor;
-            }
-            image.height = position.height;
-            image.width = position.height * widthFactor;
-            applyStyle(div, {
-                    height: position.height + "px",
-                    width: position.height * widthFactor + "px",
-                    top: position.top - position.height + "px",
-                    left: position.left - (position.height * widthFactor/2) + "px",
-                    display: position.top < 0 ? "none" : ""
-            });
+            setWidthFactor(image, div, position);
         }
+    }
+
+    function setWidthFactor(image, div, position) {
+        var widthFactor = imageInfo[image.src];
+        if (!imageInfo[image.src]) {
+            var height = image.offsetHeight;
+            var width = image.offsetWidth;
+            widthFactor = parseFloat(width/height);
+            imageInfo[image.src] = widthFactor;
+        }
+        image.height = position.height;
+        image.width = position.height * widthFactor;
+        applyStyle(div, {
+            height: position.height + "px",
+            width: position.height * widthFactor + "px",
+            top: position.top - position.height + "px",
+            left: position.left - (position.height * widthFactor/2) + "px",
+            display: position.top < 0 ? "none" : ""
+        });
     }
 
     function calculateCurvePoint(t, P0, P1, P2) {
