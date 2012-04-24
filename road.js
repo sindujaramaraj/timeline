@@ -603,7 +603,7 @@
             console.log("time taken " + (new Date().getTime() - aTime));
             aTime = new Date().getTime();
             instance[callback]();
-        }, 1000/60);
+        }, 0);
     }
 
     window.Road = Road;
