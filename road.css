@@ -90,3 +90,25 @@ body {
     z-index: 3;
     top: 0px;
 }
+
+.eventDialog {
+    position: absolute;
+    display: none;
+    background: #eee;
+    min-height: 100px;
+    min-width: 150px;
+    border-radius: 10px;
+    padding: 3px;
+}
+
+.eventDialog .dialogTitle {
+    background: #174662;
+    padding: 5px;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.eventDialog .dialogBody {
+    padding: 8px;
+}

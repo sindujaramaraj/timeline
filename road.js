@@ -13,6 +13,7 @@
 	var eventPlots = {};
 	var isMobile = detectMobile();
 	var stopTime = 1500; //1.5s by default. can be overriden by the value from configuration
+    var eventDialog = null;
 
 	function Road(canvasContainer, config) {
         var canvas = this.initCanvas(canvasContainer);
@@ -583,15 +584,35 @@
 		applyStyle(div, {height: height, width: width});
 		div.firstChild.height = height;
 		div.firstChild.width = width;
+        hideDialog();
     }
 
     function createDialog(title, data, left, top) {
-		return;		
-		$("#dialog")[0].innerHTML = data;
-		$("#dialog").dialog({
-					title: title,
-					position: [left, top]
-				});
+		if (eventDialog == null) {
+            eventDialog = document.createElement("div");
+            eventDialog.className = "eventDialog";
+            var title = document.createElement("div");
+            title.className = "dialogTitle";
+            eventDialog.appendChild(title);
+            var dialogBody = document.createElement("div");
+            dialogBody.className = "dialogBody";
+            eventDialog.appendChild(dialogBody);
+            document.body.appendChild(eventDialog);
+        }
+        eventDialog.style.display = "block";
+        eventDialog.firstChild.innerHTML = title;
+        eventDialog.lastChild.innerHTML = data;
+        applyStyle(eventDialog, {
+            display: "block",
+            left: left + "px",
+            top: top + "px"
+        });
+    }
+
+    function hideDialog() {
+        if (eventDialog != null) {
+            applyStyle(eventDialog, {display: "none"});
+        }
     }
 
    var aTime = new Date().getTime();
